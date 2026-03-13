@@ -48,27 +48,27 @@
 
 ```
 ┌───────── NVIDIA Tensor Core (Blackwell) ─────────┐
-│                                                    │
-│  Supported Precisions:                             │
-│  ┌─────────┬──────────┬─────────────┐             │
-│  │ Input A │ Input B  │ Accumulator │             │
-│  ├─────────┼──────────┼─────────────┤             │
-│  │ FP64    │ FP64     │ FP64        │             │
-│  │ TF32    │ TF32     │ FP32        │             │
-│  │ BF16    │ BF16     │ FP32        │             │
-│  │ FP16    │ FP16     │ FP16/FP32   │             │
+│                                                  │
+│  Supported Precisions:                           │
+│  ┌─────────┬──────────┬─────────────┐            │
+│  │ Input A │ Input B  │ Accumulator │            │
+│  ├─────────┼──────────┼─────────────┤            │
+│  │ FP64    │ FP64     │ FP64        │            │
+│  │ TF32    │ TF32     │ FP32        │            │
+│  │ BF16    │ BF16     │ FP32        │            │
+│  │ FP16    │ FP16     │ FP16/FP32   │            │
 │  │ FP8     │ FP8      │ FP16/FP32   │  ◄── 2x vs FP16
 │  │ FP4     │ FP4      │ FP16/FP32   │  ◄── 4x vs FP16 (Blackwell!)
 │  │ INT8    │ INT8     │ INT32       │  ◄── 2x vs FP16
 │  │ INT4    │ INT4     │ INT32       │  ◄── 4x (limited)
-│  └─────────┴──────────┴─────────────┘             │
-│                                                    │
-│  Matrix size per cycle: 16×16×16 (FP16)           │
-│                         16×16×32 (FP8/INT8)        │
-│                         16×16×64 (FP4/INT4)        │
-│                                                    │
-│  KEY INSIGHT: Lower precision = more ops/cycle     │
-│  This is WHY quantization gives speedup!           │
+│  └─────────┴──────────┴─────────────┘            │
+│                                                  │
+│  Matrix size per cycle: 16×16×16 (FP16)          │
+│                         16×16×32 (FP8/INT8)      │
+│                         16×16×64 (FP4/INT4)      │
+│                                                  │
+│  KEY INSIGHT: Lower precision = more ops/cycle   │
+│  This is WHY quantization gives speedup!         │
 └────────────────────────────────────────────────────┘
 ```
 
@@ -76,22 +76,22 @@
 
 ```
 ┌─────────── GPU Memory Hierarchy ───────────┐
-│                                             │
+│                                            │
 │  Registers        ~20 MB    10 TB/s         │ ◄── Fastest
-│       │                                     │
-│       ▼                                     │
-│  Shared Memory     ~20 MB    10 TB/s        │
-│  (L1 Cache)                                 │
-│       │                                     │
-│       ▼                                     │
-│  L2 Cache         ~50 MB    5 TB/s          │
-│       │                                     │
-│       ▼                                     │
+│       │                                    │
+│       ▼                                    │
+│  Shared Memory     ~20 MB    10 TB/s       │
+│  (L1 Cache)                                │
+│       │                                    │
+│       ▼                                    │
+│  L2 Cache         ~50 MB    5 TB/s         │
+│       │                                    │
+│       ▼                                    │
 │  HBM (DRAM)       80-192GB  2-3 TB/s       │ ◄── Bottleneck!
-│                                             │
-│  KEY INSIGHT: LLM decoding is MEMORY-BOUND  │
-│  INT4 weights use 4x less bandwidth than    │
-│  FP16, giving ~4x speedup for decode!       │
+│                                            │
+│  KEY INSIGHT: LLM decoding is MEMORY-BOUND │
+│  INT4 weights use 4x less bandwidth than   │
+│  FP16, giving ~4x speedup for decode!      │
 └─────────────────────────────────────────────┘
 ```
 
@@ -101,41 +101,41 @@
 ┌──────────────────────────────────────────────────────────────────────┐
 │                    HARDWARE → SOFTWARE MAPPINGS                      │
 │                                                                      │
-│  ┌─────────────┐    ┌──────────────────────────────────────────┐   │
-│  │ NVIDIA GPU   │───►│ CUDA → cuBLAS/CUTLASS/cuDNN             │   │
-│  │ (H100/B200)  │    │ → TensorRT / TensorRT-LLM               │   │
-│  │              │    │ → vLLM / SGLang / llama.cpp (CUDA)       │   │
-│  └─────────────┘    └──────────────────────────────────────────┘   │
+│  ┌─────────────┐    ┌──────────────────────────────────────────┐     │
+│  │ NVIDIA GPU   │───►│ CUDA → cuBLAS/CUTLASS/cuDNN             │     │
+│  │ (H100/B200)  │    │ → TensorRT / TensorRT-LLM               │     │
+│  │              │    │ → vLLM / SGLang / llama.cpp (CUDA)       │    │
+│  └─────────────┘    └──────────────────────────────────────────┘     │
 │                                                                      │
-│  ┌─────────────┐    ┌──────────────────────────────────────────┐   │
-│  │ AMD GPU      │───►│ ROCm/HIP → rocBLAS/MIOpen/AITER          │   │
-│  │ (MI300X)     │    │ → vLLM / SGLang / llama.cpp (HIP)        │   │
-│  └─────────────┘    └──────────────────────────────────────────┘   │
+│  ┌─────────────┐    ┌──────────────────────────────────────────┐     │
+│  │ AMD GPU      │───►│ ROCm/HIP → rocBLAS/MIOpen/AITER          │    │
+│  │ (MI300X)     │    │ → vLLM / SGLang / llama.cpp (HIP)        │    │
+│  └─────────────┘    └──────────────────────────────────────────┘     │
 │                                                                      │
-│  ┌─────────────┐    ┌──────────────────────────────────────────┐   │
-│  │ Intel CPU    │───►│ oneAPI/SYCL → oneDNN/oneMKL (AMX/AVX)    │   │
-│  │ (Xeon/Gaudi) │    │ → OpenVINO / ONNX RT / vLLM (CPU)        │   │
-│  └─────────────┘    └──────────────────────────────────────────┘   │
+│  ┌─────────────┐    ┌──────────────────────────────────────────┐     │
+│  │ Intel CPU    │───►│ oneAPI/SYCL → oneDNN/oneMKL (AMX/AVX)    │    │
+│  │ (Xeon/Gaudi) │    │ → OpenVINO / ONNX RT / vLLM (CPU)        │    │
+│  └─────────────┘    └──────────────────────────────────────────┘     │
 │                                                                      │
-│  ┌─────────────┐    ┌──────────────────────────────────────────┐   │
+│  ┌─────────────┐    ┌──────────────────────────────────────────┐     │
 │  │ Google TPU   │───►│ XLA/JAX → TPU runtime                     │   │
-│  │ (v5e/v6e)    │    │ → vLLM (TPU) / SGLang (JAX backend)      │   │
-│  └─────────────┘    └──────────────────────────────────────────┘   │
+│  │ (v5e/v6e)    │    │ → vLLM (TPU) / SGLang (JAX backend)      │    │
+│  └─────────────┘    └──────────────────────────────────────────┘     │
 │                                                                      │
-│  ┌─────────────┐    ┌──────────────────────────────────────────┐   │
-│  │ Apple Silicon│───►│ Metal → Metal Performance Shaders          │   │
-│  │ (M4 Max)     │    │ → llama.cpp (Metal) / MLC-LLM              │   │
-│  └─────────────┘    └──────────────────────────────────────────┘   │
+│  ┌─────────────┐    ┌──────────────────────────────────────────┐     │
+│  │ Apple Silicon│───►│ Metal → Metal Performance Shaders          │  │
+│  │ (M4 Max)     │    │ → llama.cpp (Metal) / MLC-LLM              │  │
+│  └─────────────┘    └──────────────────────────────────────────┘     │
 │                                                                      │
-│  ┌─────────────┐    ┌──────────────────────────────────────────┐   │
+│  ┌─────────────┐    ┌──────────────────────────────────────────┐     │
 │  │ Qualcomm NPU │───►│ QNN SDK → Hexagon DSP/NPU                 │   │
 │  │ (Hexagon)    │    │ → ExecuTorch (QNN EP) / ONNX RT (QNN EP)  │   │
-│  └─────────────┘    └──────────────────────────────────────────┘   │
+│  └─────────────┘    └──────────────────────────────────────────┘     │
 │                                                                      │
-│  ┌─────────────┐    ┌──────────────────────────────────────────┐   │
+│  ┌─────────────┐    ┌──────────────────────────────────────────┐     │
 │  │ Edge MCU     │───►│ Vendor SDK (Renesas e-AI, Synopsys ARC)   │   │
 │  │ (ARM Cortex) │    │ → TFLite Micro / CMSIS-NN / custom        │   │
-│  └─────────────┘    └──────────────────────────────────────────┘   │
+│  └─────────────┘    └──────────────────────────────────────────┘     │
 └──────────────────────────────────────────────────────────────────────┘
 ```
 

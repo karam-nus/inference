@@ -10,21 +10,21 @@
 
 ```
 ┌─────── Your Research World ─────────┐     ┌─────── Production World ─────────┐
-│                                      │     │                                   │
-│  • PyTorch nn.Module                 │     │  • Thousands of concurrent users   │
-│  • Calibration on small dataset      │     │  • <100ms latency target           │
-│  • Measure perplexity, accuracy      │     │  • 24/7 availability               │
-│  • Run on 1-8 GPUs                   │     │  • Cost per token matters           │
-│  • Batch size 1-32                   │     │  • Multi-GPU, multi-node            │
-│  • Python everywhere                 │     │  • C++/CUDA kernels                 │
-│                                      │     │  • Specific hardware targets         │
-│                                      │ GAP │                                   │
-│  You develop:                        │ ◄─► │  They need:                        │
-│  • Quantization algorithm            │     │  • Optimized CUDA/GPU kernels      │
-│  • Scale/zero-point computation      │     │  • Serialized model format          │
-│  • Weight packing scheme             │     │  • Inference engine integration     │
-│  • Calibration strategy              │     │  • Hardware-specific dispatch       │
-│                                      │     │  • Serving infrastructure           │
+│                                      │     │                                 │
+│  • PyTorch nn.Module                 │     │  • Thousands of concurrent users│
+│  • Calibration on small dataset      │     │  • <100ms latency target        │
+│  • Measure perplexity, accuracy      │     │  • 24/7 availability            │
+│  • Run on 1-8 GPUs                   │     │  • Cost per token matters       │
+│  • Batch size 1-32                   │     │  • Multi-GPU, multi-node        │
+│  • Python everywhere                 │     │  • C++/CUDA kernels             │
+│                                      │     │  • Specific hardware targets    │
+│                                      │ GAP │                                 │
+│  You develop:                        │ ◄─► │  They need:                     │
+│  • Quantization algorithm            │     │  • Optimized CUDA/GPU kernels   │
+│  • Scale/zero-point computation      │     │  • Serialized model format      │
+│  • Weight packing scheme             │     │  • Inference engine integration │
+│  • Calibration strategy              │     │  • Hardware-specific dispatch   │
+│                                      │     │  • Serving infrastructure       │
 └──────────────────────────────────────┘     └───────────────────────────────────┘
 ```
 
@@ -110,28 +110,28 @@ python convert_hf_to_gguf.py \
 
 ```
 ┌─────── THIS IS THE HARDEST PART ──────────────────────────────────┐
-│                                                                    │
+│                                                                   │
 │  Your quantized format: W4A16 with group_size=128, asymmetric     │
-│                                                                    │
-│  Needs a KERNEL that can:                                          │
-│  1. Load packed INT4 weights (2 per byte)                          │
+│                                                                   │
+│  Needs a KERNEL that can:                                         │
+│  1. Load packed INT4 weights (2 per byte)                         │
 │  2. Load FP16 scales (one per group of 128 weights)               │
-│  3. Load FP16 zero-points (one per group)                          │
-│  4. Dequantize: w_fp16 = (w_int4 - zero) * scale                 │
-│  5. Compute: output = input @ w_fp16.T                             │
-│  6. All on Tensor Cores, maximizing throughput                     │
-│                                                                    │
-│  Available kernels for W4A16:                                      │
+│  3. Load FP16 zero-points (one per group)                         │
+│  4. Dequantize: w_fp16 = (w_int4 - zero) * scale                  │
+│  5. Compute: output = input @ w_fp16.T                            │
+│  6. All on Tensor Cores, maximizing throughput                    │
+│                                                                   │
+│  Available kernels for W4A16:                                     │
 │  ├── Marlin kernel (vLLM) ─── very fast, NVIDIA GPU only          │
-│  ├── Machete kernel (NVIDIA) ─ from CUTLASS, flexible              │
+│  ├── Machete kernel (NVIDIA) ─ from CUTLASS, flexible             │
 │  ├── ExLlama v2 kernel ────── popular, GPTQ-optimized             │
 │  ├── AutoAWQ kernel ─────────  AWQ-specific, reference impl       │
-│  └── CUTLASS mixed-precision ─ generic but configurable            │
-│                                                                    │
-│  If your format DOESN'T match any existing kernel:                 │
-│  → You need to WRITE or MODIFY a kernel                            │
+│  └── CUTLASS mixed-precision ─ generic but configurable           │
+│                                                                   │
+│  If your format DOESN'T match any existing kernel:                │
+│  → You need to WRITE or MODIFY a kernel                           │
 │  → Or your quantized model will be SLOW (Python dequant+FP16 mm)  │
-│                                                                    │
+│                                                                   │
 └────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -215,8 +215,8 @@ instance_group [
 
 ```
 ┌─────────────────────────────────────────────────┐
-│  I developed a new quantization algorithm.       │
-│  How do I get it deployed?                       │
+│  I developed a new quantization algorithm.      │
+│  How do I get it deployed?                      │
 └────────────────────┬────────────────────────────┘
                      │
           ┌──────────┴──────────┐
@@ -308,44 +308,44 @@ Understanding weight packing is essential when writing or debugging quantized ke
 
 ```
 ┌──────── INT4 Weight Packing Schemes ──────────────────────┐
-│                                                             │
-│  Problem: INT4 is NOT a native hardware data type.         │
+│                                                           │
+│  Problem: INT4 is NOT a native hardware data type.        │
 │  You can't store a single 4-bit value — the minimum       │
-│  addressable unit is 8 bits (1 byte).                      │
-│                                                             │
+│  addressable unit is 8 bits (1 byte).                     │
+│                                                           │
 │  PACKING: Store 2 INT4 values per byte (or 8 per INT32)   │
-│                                                             │
+│                                                           │
 │  ┌─── 1 byte (uint8) ───┐                                 │
-│  │ high nibble│low nibble│                                 │
-│  │   w1 (4b)  │  w0 (4b) │                                 │
-│  └────────────┴──────────┘                                 │
-│                                                             │
-│  ┌─── 1 INT32 ──────────────────────────────────────┐      │
-│  │ w7 │ w6 │ w5 │ w4 │ w3 │ w2 │ w1 │ w0 │          │      │
-│  │ 4b │ 4b │ 4b │ 4b │ 4b │ 4b │ 4b │ 4b │          │      │
-│  └──────────────────────────────────────────────┘      │      │
-│  Unpack: w0 = (int32_val >> 0) & 0xF                   │      │
-│          w1 = (int32_val >> 4) & 0xF                   │      │
-│          ...                                            │      │
-│                                                             │
-│  DIFFERENT FORMATS PACK DIFFERENTLY:                       │
-│                                                             │
+│  │ high nibble│low nibble│                                │
+│  │   w1 (4b)  │  w0 (4b) │                                │
+│  └────────────┴──────────┘                                │
+│                                                           │
+│  ┌─── 1 INT32 ──────────────────────────────────────┐     │
+│  │ w7 │ w6 │ w5 │ w4 │ w3 │ w2 │ w1 │ w0 │          │     │
+│  │ 4b │ 4b │ 4b │ 4b │ 4b │ 4b │ 4b │ 4b │          │     │
+│  └──────────────────────────────────────────────┘      │  │
+│  Unpack: w0 = (int32_val >> 0) & 0xF                   │  │
+│          w1 = (int32_val >> 4) & 0xF                   │  │
+│          ...                                            │ │
+│                                                           │
+│  DIFFERENT FORMATS PACK DIFFERENTLY:                      │
+│                                                           │
 │  AWQ:   Pack along output channel dimension               │
-│         qweight shape: [in_features, out_features/8]       │
-│         (8 INT4 weights per INT32, column-major)           │
-│                                                             │
-│  GPTQ:  Pack along input channel dimension                 │
-│         qweight shape: [in_features/8, out_features]       │
-│         (8 INT4 weights per INT32, row-major)              │
-│         → Different kernel needed vs AWQ!                   │
-│                                                             │
-│  Marlin: Reorders weights for Tensor Core alignment        │
-│         Special interleaved layout matching warp access     │
-│         → Fastest kernel, but requires format conversion    │
-│                                                             │
-│  KEY INSIGHT: AWQ and GPTQ weights are NOT interchangeable │
-│  even though both are "INT4 with group_size=128."          │
-│  The PACKING matters for kernel compatibility!              │
+│         qweight shape: [in_features, out_features/8]      │
+│         (8 INT4 weights per INT32, column-major)          │
+│                                                           │
+│  GPTQ:  Pack along input channel dimension                │
+│         qweight shape: [in_features/8, out_features]      │
+│         (8 INT4 weights per INT32, row-major)             │
+│         → Different kernel needed vs AWQ!                 │
+│                                                           │
+│  Marlin: Reorders weights for Tensor Core alignment       │
+│         Special interleaved layout matching warp access   │
+│         → Fastest kernel, but requires format conversion  │
+│                                                           │
+│  KEY INSIGHT: AWQ and GPTQ weights are NOT interchangeable│
+│  even though both are "INT4 with group_size=128."         │
+│  The PACKING matters for kernel compatibility!            │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -353,48 +353,48 @@ Understanding weight packing is essential when writing or debugging quantized ke
 
 ```
 ┌──────── Post-Training Quantization (PTQ) ──────────────────┐
-│                                                              │
-│  What: Quantize a PRETRAINED model without further training │
+│                                                            │
+│  What: Quantize a PRETRAINED model without further training│
 │  Examples: AWQ, GPTQ, SmoothQuant, FP8 calibration         │
-│  Cost: Minutes to hours (calibration on 128-512 samples)    │
-│  Quality: Good for ≥4-bit, degrades at 2-3 bit              │
-│                                                              │
-│  When to use:                                                │
+│  Cost: Minutes to hours (calibration on 128-512 samples)   │
+│  Quality: Good for ≥4-bit, degrades at 2-3 bit             │
+│                                                            │
+│  When to use:                                              │
 │  ✅ You don't have training infrastructure                  │
 │  ✅ The model is large (70B+) and training is expensive     │
 │  ✅ INT4 or INT8 precision is sufficient                    │
 │  ✅ You want fast iteration on quantization algorithms      │
-│                                                              │
-│  This is what YOU (the researcher) mostly work on.          │
+│                                                            │
+│  This is what YOU (the researcher) mostly work on.         │
 └──────────────────────────────────────────────────────────────┘
 
 ┌──────── Quantization-Aware Training (QAT) ─────────────────┐
-│                                                              │
-│  What: Simulate quantization DURING training/fine-tuning    │
+│                                                            │
+│  What: Simulate quantization DURING training/fine-tuning   │
 │  Examples: Google AQT (JAX), PyTorch QAT, LLM-QAT          │
-│  Cost: Full training run (days/weeks, 100s of GPU-hours)    │
-│  Quality: Better than PTQ, especially at ≤3 bits            │
-│                                                              │
-│  When to use:                                                │
+│  Cost: Full training run (days/weeks, 100s of GPU-hours)   │
+│  Quality: Better than PTQ, especially at ≤3 bits           │
+│                                                            │
+│  When to use:                                              │
 │  ✅ Ultra-low-bit quantization (2-3 bit)                    │
 │  ✅ You have training budget and data access                │
 │  ✅ Quality at INT4 PTQ isn't sufficient for your use case  │
 │  ✅ Deploying a high-value production model worth training  │
-│                                                              │
-│  Less common in research because of cost.                   │
+│                                                            │
+│  Less common in research because of cost.                  │
 └──────────────────────────────────────────────────────────────┘
 
 ┌──────── Comparison ────────────────────────────────────────┐
-│                                                              │
-│  Metric          │ PTQ              │ QAT                   │
+│                                                            │
+│  Metric          │ PTQ              │ QAT                  │
 │  ────────────────│──────────────────│───────────────────────│
-│  Cost            │ Low (hours)      │ High (days/weeks)     │
-│  Quality at W8A8 │ Excellent        │ Excellent             │
-│  Quality at W4A16│ Good             │ Very good             │
-│  Quality at W2   │ Poor             │ Acceptable            │
-│  Calibration data│ 128-512 samples  │ Full training dataset │
-│  Ease of use     │ Easy             │ Requires training     │
-│  Industry use    │ ~90% of deploys  │ ~10% (high-value)     │
+│  Cost            │ Low (hours)      │ High (days/weeks)    │
+│  Quality at W8A8 │ Excellent        │ Excellent            │
+│  Quality at W4A16│ Good             │ Very good            │
+│  Quality at W2   │ Poor             │ Acceptable           │
+│  Calibration data│ 128-512 samples  │ Full training dataset│
+│  Ease of use     │ Easy             │ Requires training    │
+│  Industry use    │ ~90% of deploys  │ ~10% (high-value)    │
 └──────────────────────────────────────────────────────────────┘
 ```
 
@@ -402,37 +402,37 @@ Understanding weight packing is essential when writing or debugging quantized ke
 
 ```
 ┌──────── Calibration for PTQ ──────────────────────────────┐
-│                                                             │
-│  Purpose: Run representative inputs through the model to   │
-│  collect activation statistics → compute scales/zero-pts   │
-│                                                             │
-│  WHAT MAKES GOOD CALIBRATION DATA:                         │
+│                                                           │
+│  Purpose: Run representative inputs through the model to  │
+│  collect activation statistics → compute scales/zero-pts  │
+│                                                           │
+│  WHAT MAKES GOOD CALIBRATION DATA:                        │
 │  ✅ Representative of real-world inputs                    │
 │  ✅ Diverse (covers different topics/domains)              │
 │  ✅ Reasonable length (not too short, not too long)        │
-│  ✅ 128-512 samples is usually sufficient for LLMs        │
+│  ✅ 128-512 samples is usually sufficient for LLMs         │
 │  ❌ NOT the same as training data (can be any text)        │
-│  ❌ NOT labeled (no ground truth needed)                    │
-│                                                             │
-│  COMMON CALIBRATION DATASETS:                              │
-│  • pileval (used by AutoAWQ — excerpt from The Pile)       │
-│  • wikitext-2 (Wikipedia articles)                         │
+│  ❌ NOT labeled (no ground truth needed)                   │
+│                                                           │
+│  COMMON CALIBRATION DATASETS:                             │
+│  • pileval (used by AutoAWQ — excerpt from The Pile)      │
+│  • wikitext-2 (Wikipedia articles)                        │
 │  • c4 (Common Crawl subset — used by SmoothQuant)         │
-│  • Custom domain data (best for domain-specific models)    │
-│                                                             │
-│  HOW MANY SAMPLES?                                         │
-│  • AWQ: 128 samples typical                                │
+│  • Custom domain data (best for domain-specific models)   │
+│                                                           │
+│  HOW MANY SAMPLES?                                        │
+│  • AWQ: 128 samples typical                               │
 │  • GPTQ: 128-256 samples                                  │
-│  • SmoothQuant: 512 samples typical                        │
-│  • FP8 calibration: 100-500 samples                        │
-│  • imatrix (llama.cpp): 100+ chunks recommended            │
-│                                                             │
-│  DOES CALIBRATION DATA MATTER?                             │
-│  • For INT8/FP8: Minimal impact (robust)                   │
-│  • For INT4: Moderate impact (wrong domain can hurt)       │
-│  • For INT2-3: Significant impact (choose carefully)       │
-│                                                             │
-│  GOTCHA: Calibration data that's too short (< 64 tokens)   │
+│  • SmoothQuant: 512 samples typical                       │
+│  • FP8 calibration: 100-500 samples                       │
+│  • imatrix (llama.cpp): 100+ chunks recommended           │
+│                                                           │
+│  DOES CALIBRATION DATA MATTER?                            │
+│  • For INT8/FP8: Minimal impact (robust)                  │
+│  • For INT4: Moderate impact (wrong domain can hurt)      │
+│  • For INT2-3: Significant impact (choose carefully)      │
+│                                                           │
+│  GOTCHA: Calibration data that's too short (< 64 tokens)  │
 │  can produce poor scale estimates. Use full-length samples. │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -441,43 +441,43 @@ Understanding weight packing is essential when writing or debugging quantized ke
 
 ```
 ┌──────── The Activation Quantization Challenge ────────────┐
-│                                                             │
-│  Weight quantization (W4, W8) is relatively easy:          │
-│  • Weights are STATIC — known at quantization time         │
-│  • Distribution is approximately Gaussian                  │
-│  • Per-channel or per-group scales work well               │
-│                                                             │
-│  Activation quantization (A8, A4) is HARD:                 │
-│  • Activations are DYNAMIC — change with every input       │
-│  • Outlier channels: some channels have 10-100× larger     │
-│    values than others                                       │
-│                                                             │
-│    ┌─── Activation distribution example ───────────────┐   │
-│    │                                                     │   │
-│    │  Channel 0:  [-1.2, 0.5, -0.8, 0.3, ...]  ← normal│   │
-│    │  Channel 1:  [-0.9, 0.7, -0.4, 0.6, ...]  ← normal│   │
-│    │  Channel 42: [-68.5, 52.3, -71.2, ...]     ← OUTLIER│   │
-│    │                                                     │   │
-│    │  If you use per-tensor scale for INT8:              │   │
-│    │  scale = max(|all values|) / 127 = 71.2 / 127      │   │
-│    │  Normal channels get ~2-bit effective precision!    │   │
-│    └─────────────────────────────────────────────────────┘   │
-│                                                             │
-│  SOLUTIONS:                                                 │
-│  • SmoothQuant: Migrate difficulty from activations to     │
-│    weights (multiply act by s, divide weight by s)         │
-│  • Per-token quantization: Different scale per token       │
-│  • Per-channel activation scales: More accurate            │
-│  • Dynamic quantization: Compute scales at runtime         │
-│    (slower but adapts to each input)                       │
+│                                                           │
+│  Weight quantization (W4, W8) is relatively easy:         │
+│  • Weights are STATIC — known at quantization time        │
+│  • Distribution is approximately Gaussian                 │
+│  • Per-channel or per-group scales work well              │
+│                                                           │
+│  Activation quantization (A8, A4) is HARD:                │
+│  • Activations are DYNAMIC — change with every input      │
+│  • Outlier channels: some channels have 10-100× larger    │
+│    values than others                                     │
+│                                                           │
+│    ┌─── Activation distribution example ───────────────┐  │
+│    │                                                     ││
+│    │  Channel 0:  [-1.2, 0.5, -0.8, 0.3, ...]  ← normal│  │
+│    │  Channel 1:  [-0.9, 0.7, -0.4, 0.6, ...]  ← normal│  │
+│    │  Channel 42: [-68.5, 52.3, -71.2, ...]     ← OUTLIER││
+│    │                                                     ││
+│    │  If you use per-tensor scale for INT8:              ││
+│    │  scale = max(|all values|) / 127 = 71.2 / 127      │ │
+│    │  Normal channels get ~2-bit effective precision!    ││
+│    └─────────────────────────────────────────────────────┘│
+│                                                           │
+│  SOLUTIONS:                                               │
+│  • SmoothQuant: Migrate difficulty from activations to    │
+│    weights (multiply act by s, divide weight by s)        │
+│  • Per-token quantization: Different scale per token      │
+│  • Per-channel activation scales: More accurate           │
+│  • Dynamic quantization: Compute scales at runtime        │
+│    (slower but adapts to each input)                      │
 │  • FP8 (E4M3): Wider dynamic range than INT8 — handles    │
-│    outliers better without smoothing                        │
-│                                                             │
-│  This is why:                                               │
-│  • W4A16 is common (weight quant easy, skip act quant)     │
-│  • W8A8 is common (INT8 act is manageable with smoothing)  │
-│  • W4A4 is rare (4-bit act is extremely challenging)       │
-│  • FP8 is gaining popularity (handles outliers natively)    │
+│    outliers better without smoothing                      │
+│                                                           │
+│  This is why:                                             │
+│  • W4A16 is common (weight quant easy, skip act quant)    │
+│  • W8A8 is common (INT8 act is manageable with smoothing) │
+│  • W4A4 is rare (4-bit act is extremely challenging)      │
+│  • FP8 is gaining popularity (handles outliers natively)  │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -485,37 +485,37 @@ Understanding weight packing is essential when writing or debugging quantized ke
 
 ```
 ┌──────── How Architecture Affects Quantization ────────────┐
-│                                                             │
-│  MODEL SIZE:                                                │
-│  • Larger models (70B+) are MORE resilient to quantization │
-│    (redundancy absorbs precision loss)                      │
-│  • Small models (1-3B) are MORE sensitive                  │
-│    (every parameter matters more)                           │
+│                                                           │
+│  MODEL SIZE:                                              │
+│  • Larger models (70B+) are MORE resilient to quantization│
+│    (redundancy absorbs precision loss)                    │
+│  • Small models (1-3B) are MORE sensitive                 │
+│    (every parameter matters more)                         │
 │  • Rule of thumb: 70B @ Q4 ≈ 7B @ Q8 in quality           │
-│                                                             │
-│  DENSE vs MoE:                                              │
-│  • MoE models (Mixtral, DeepSeek) may be more resilient    │
-│    — only a subset of experts active per token              │
-│  • But MoE has MORE total parameters → higher memory need  │
-│  • Expert-level quantization: different bits per expert    │
-│                                                             │
-│  SENSITIVE LAYERS (keep at higher precision):              │
-│  • Embedding layer (first layer, maps tokens to vectors)   │
-│  • LM head (final layer, maps back to vocabulary)          │
-│  • First and last transformer blocks                       │
-│  • Attention layers (more sensitive than MLP typically)     │
-│  → Mixed-precision: sensitive layers at FP16, rest at INT4 │
-│                                                             │
-│  VISION-LANGUAGE MODELS (VLMs):                            │
-│  • Vision encoder and language model may need different     │
-│    quantization strategies                                  │
-│  • Cross-attention layers are often more sensitive          │
-│  • Vision encoder may tolerate INT8 but not INT4           │
-│                                                             │
-│  GQA vs MHA:                                                │
-│  • GQA models (Llama 3) have smaller KV-cache              │
-│  • Less pressure for KV-cache quantization                  │
-│  • But KV-cache quant (FP8) still helps batch capacity     │
+│                                                           │
+│  DENSE vs MoE:                                            │
+│  • MoE models (Mixtral, DeepSeek) may be more resilient   │
+│    — only a subset of experts active per token            │
+│  • But MoE has MORE total parameters → higher memory need │
+│  • Expert-level quantization: different bits per expert   │
+│                                                           │
+│  SENSITIVE LAYERS (keep at higher precision):             │
+│  • Embedding layer (first layer, maps tokens to vectors)  │
+│  • LM head (final layer, maps back to vocabulary)         │
+│  • First and last transformer blocks                      │
+│  • Attention layers (more sensitive than MLP typically)   │
+│  → Mixed-precision: sensitive layers at FP16, rest at INT4│
+│                                                           │
+│  VISION-LANGUAGE MODELS (VLMs):                           │
+│  • Vision encoder and language model may need different   │
+│    quantization strategies                                │
+│  • Cross-attention layers are often more sensitive        │
+│  • Vision encoder may tolerate INT8 but not INT4          │
+│                                                           │
+│  GQA vs MHA:                                              │
+│  • GQA models (Llama 3) have smaller KV-cache             │
+│  • Less pressure for KV-cache quantization                │
+│  • But KV-cache quant (FP8) still helps batch capacity    │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -523,31 +523,31 @@ Understanding weight packing is essential when writing or debugging quantized ke
 
 ```
 ┌──────── Quantization Cost Savings ────────────────────────┐
-│                                                             │
-│  Example: Serving Llama 3 70B (March 2026 cloud pricing)   │
-│                                                             │
-│  ┌────────────┬──────────┬────────────┬────────────────┐   │
-│  │ Precision  │ GPUs     │ $/hr (est.)│ Throughput     │   │
-│  ├────────────┼──────────┼────────────┼────────────────┤   │
+│                                                           │
+│  Example: Serving Llama 3 70B (March 2026 cloud pricing)  │
+│                                                           │
+│  ┌────────────┬──────────┬────────────┬────────────────┐  │
+│  │ Precision  │ GPUs     │ $/hr (est.)│ Throughput     │  │
+│  ├────────────┼──────────┼────────────┼────────────────┤  │
 │  │ FP16       │ 4× H100  │ ~$16/hr    │ ~2000 tok/s   │   │
 │  │ FP8        │ 2× H100  │ ~$8/hr     │ ~2500 tok/s   │   │
 │  │ AWQ INT4   │ 1× H100  │ ~$4/hr     │ ~3000 tok/s   │   │
 │  │ AWQ INT4   │ 1× L40S  │ ~$1.5/hr   │ ~1500 tok/s   │   │
 │  │ GGUF Q4_K_M│ 1× L40S  │ ~$1.5/hr   │ ~1200 tok/s   │   │
-│  └────────────┴──────────┴────────────┴────────────────┘   │
-│                                                             │
-│  KEY TAKEAWAYS:                                             │
-│  • INT4 quantization can give 4-10× cost reduction         │
-│  • Same model on cheaper GPU often beats expensive GPU     │
-│    (AWQ on L40S < FP16 on H100)                            │
-│  • Cost per million tokens:                                 │
-│    FP16: ~$0.30/M tokens                                   │
-│    INT4: ~$0.05/M tokens                                   │
-│  • Break-even: Quantization time (minutes) pays for        │
-│    itself within the first few hours of serving             │
-│                                                             │
-│  Note: Prices are approximate and vary by cloud provider.  │
-│  Always benchmark YOUR specific model and workload.        │
+│  └────────────┴──────────┴────────────┴────────────────┘  │
+│                                                           │
+│  KEY TAKEAWAYS:                                           │
+│  • INT4 quantization can give 4-10× cost reduction        │
+│  • Same model on cheaper GPU often beats expensive GPU    │
+│    (AWQ on L40S < FP16 on H100)                           │
+│  • Cost per million tokens:                               │
+│    FP16: ~$0.30/M tokens                                  │
+│    INT4: ~$0.05/M tokens                                  │
+│  • Break-even: Quantization time (minutes) pays for       │
+│    itself within the first few hours of serving           │
+│                                                           │
+│  Note: Prices are approximate and vary by cloud provider. │
+│  Always benchmark YOUR specific model and workload.       │
 └─────────────────────────────────────────────────────────────┘
 ```
 

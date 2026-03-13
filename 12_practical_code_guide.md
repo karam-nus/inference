@@ -680,23 +680,23 @@ def measure_perplexity(model, tokenizer, dataset_name="wikitext",
 
 ```
 ┌──────────────────────── DEPLOYMENT CHEAT SHEET ──────────────────────┐
-│                                                                       │
+│                                                                      │
 │  GOAL                    RECIPE                                      │
 │  ────                    ──────                                      │
-│  Max throughput (NVIDIA)  FP8 + TRT-LLM + Triton Server             │
+│  Max throughput (NVIDIA)  FP8 + TRT-LLM + Triton Server              │
 │  Good throughput + easy   AWQ INT4 + vLLM                            │
 │  Best quality/throughput  SmoothQuant W8A8 + vLLM                    │
-│  Multi-GPU (80B+ model)  AWQ/FP8 + vLLM --tp 4                      │
+│  Multi-GPU (80B+ model)  AWQ/FP8 + vLLM --tp 4                       │
 │  Local Mac/PC            GGUF Q4_K_M + llama.cpp (Ollama)            │
-│  Cross-platform          ONNX INT4 + ONNX Runtime                   │
+│  Cross-platform          ONNX INT4 + ONNX Runtime                    │
 │  Mobile phone            ExecuTorch INT4/INT8 or Core ML             │
-│  Web browser             MLC-LLM (WebGPU) or ONNX RT Web            │
-│  Embedded/MCU            TFLite INT8 + TFLM (not for LLMs)          │
+│  Web browser             MLC-LLM (WebGPU) or ONNX RT Web             │
+│  Embedded/MCU            TFLite INT8 + TFLM (not for LLMs)           │
 │  AMD GPU                 AWQ INT4 + vLLM --device rocm               │
-│  Structured output       GPTQ/AWQ + SGLang (compressed FSM)         │
+│  Structured output       GPTQ/AWQ + SGLang (compressed FSM)          │
 │  Multi-model serving     Any quant + Triton Inference Server         │
 │  Quick experiment        HF Transformers + BitsAndBytes (NF4)        │
-│                                                                       │
+│                                                                      │
 │  QUANTIZE               COMMAND                                      │
 │  ────────               ───────                                      │
 │  AWQ                    autoawq: AutoAWQForCausalLM.quantize()       │
@@ -705,11 +705,11 @@ def measure_perplexity(model, tokenizer, dataset_name="wikitext",
 │  GGUF                   llama.cpp: llama-quantize model.gguf Q4_K_M  │
 │  BitsAndBytes           transformers: load_in_4bit=True              │
 │  SmoothQuant            smoothquant or vLLM built-in                 │
-│                                                                       │
-│  UPLOAD TO HF            COMMAND                                      │
-│  ────────────            ───────                                      │
+│                                                                      │
+│  UPLOAD TO HF            COMMAND                                     │
+│  ────────────            ───────                                     │
 │  huggingface-cli upload username/model-awq ./llama3-8b-awq           │
-│                                                                       │
+│                                                                      │
 └───────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -719,38 +719,38 @@ def measure_perplexity(model, tokenizer, dataset_name="wikitext",
 
 ```
 ┌──────────── THE COMPLETE PICTURE ──────────────────────────┐
-│                                                              │
-│  1. RESEARCH (You)                                          │
-│     ├── Develop quantization algorithm (Python/PyTorch)     │
-│     ├── Evaluate on benchmarks (perplexity, accuracy)       │
-│     └── Publish paper                                       │
-│                                                              │
-│  2. IMPLEMENTATION                                          │
-│     ├── Write quantization script (autoawq-style)           │
-│     ├── Create HuggingFace-compatible output                │
-│     │   (SafeTensors + quantize_config.json)                │
-│     └── Optional: Write custom Triton/CUDA kernel           │
-│                                                              │
-│  3. INTEGRATION                                             │
-│     ├── PR to vLLM/SGLang to support your format            │
-│     ├── PR to llama.cpp for GGUF support                    │
-│     ├── PR to ONNX RT for new quantized op                  │
-│     └── PR to HuggingFace Transformers                      │
-│                                                              │
-│  4. DEPLOYMENT (Users of your research)                     │
-│     ├── quantize with your tool                             │
-│     ├── upload to HuggingFace Hub                           │
+│                                                            │
+│  1. RESEARCH (You)                                         │
+│     ├── Develop quantization algorithm (Python/PyTorch)    │
+│     ├── Evaluate on benchmarks (perplexity, accuracy)      │
+│     └── Publish paper                                      │
+│                                                            │
+│  2. IMPLEMENTATION                                         │
+│     ├── Write quantization script (autoawq-style)          │
+│     ├── Create HuggingFace-compatible output               │
+│     │   (SafeTensors + quantize_config.json)               │
+│     └── Optional: Write custom Triton/CUDA kernel          │
+│                                                            │
+│  3. INTEGRATION                                            │
+│     ├── PR to vLLM/SGLang to support your format           │
+│     ├── PR to llama.cpp for GGUF support                   │
+│     ├── PR to ONNX RT for new quantized op                 │
+│     └── PR to HuggingFace Transformers                     │
+│                                                            │
+│  4. DEPLOYMENT (Users of your research)                    │
+│     ├── quantize with your tool                            │
+│     ├── upload to HuggingFace Hub                          │
 │     ├── serve with vLLM/SGLang/TRT-LLM                     │
-│     └── or run locally with llama.cpp/Ollama                │
-│                                                              │
-│  5. IMPACT MEASUREMENT                                      │
-│     ├── Downloads on HuggingFace                            │
-│     ├── Integration in major engines                        │
-│     ├── Community adoption (GGUF conversions, etc.)         │
-│     └── Industry deployment                                 │
-│                                                              │
+│     └── or run locally with llama.cpp/Ollama               │
+│                                                            │
+│  5. IMPACT MEASUREMENT                                     │
+│     ├── Downloads on HuggingFace                           │
+│     ├── Integration in major engines                       │
+│     ├── Community adoption (GGUF conversions, etc.)        │
+│     └── Industry deployment                                │
+│                                                            │
 │  This is the path AWQ and GPTQ followed.                   │
-│  Your next algorithm can follow the same path!              │
+│  Your next algorithm can follow the same path!             │
 └──────────────────────────────────────────────────────────────┘
 ```
 

@@ -10,44 +10,44 @@
 
 ```
 ┌─────────────────────── COMPANY ECOSYSTEM MAP ──────────────────────┐
-│                                                                     │
+│                                                                    │
 │  ┌──────────── SILICON MAKERS ────────────┐                        │
-│  │                                         │                        │
-│  │  GPU/Accelerator:  NVIDIA, AMD, Intel   │                        │
-│  │  TPU/Custom ASIC:  Google, AWS, Groq    │                        │
-│  │  Mobile SoC:       Qualcomm, Apple,     │                        │
-│  │                    MediaTek, Samsung     │                        │
-│  │  Edge/IoT MCU:     Renesas, NXP, STM,   │                        │
-│  │                    Infineon, TI          │                        │
-│  └─────────────────────────────────────────┘                        │
-│                                                                     │
+│  │                                         │                       │
+│  │  GPU/Accelerator:  NVIDIA, AMD, Intel   │                       │
+│  │  TPU/Custom ASIC:  Google, AWS, Groq    │                       │
+│  │  Mobile SoC:       Qualcomm, Apple,     │                       │
+│  │                    MediaTek, Samsung     │                      │
+│  │  Edge/IoT MCU:     Renesas, NXP, STM,   │                       │
+│  │                    Infineon, TI          │                      │
+│  └─────────────────────────────────────────┘                       │
+│                                                                    │
 │  ┌──────────── IP / EDA PROVIDERS ────────┐                        │
-│  │                                         │                        │
+│  │                                         │                       │
 │  │  Synopsys:  NPU IP blocks (ARC NPU),   │                        │
-│  │             EDA tools for chip design    │                        │
-│  │  Cadence:   Tensilica NPU IP, EDA       │                        │
-│  │  ARM:       Ethos NPU IP, CPU cores     │                        │
-│  │  Imagination: PowerVR GPU/NPU IP        │                        │
-│  │  CEVA:      SensPro NPU IP              │                        │
-│  └─────────────────────────────────────────┘                        │
-│                                                                     │
+│  │             EDA tools for chip design    │                      │
+│  │  Cadence:   Tensilica NPU IP, EDA       │                       │
+│  │  ARM:       Ethos NPU IP, CPU cores     │                       │
+│  │  Imagination: PowerVR GPU/NPU IP        │                       │
+│  │  CEVA:      SensPro NPU IP              │                       │
+│  └─────────────────────────────────────────┘                       │
+│                                                                    │
 │  ┌──────────── SOFTWARE STACK BUILDERS ───┐                        │
-│  │                                         │                        │
-│  │  Meta:     PyTorch, ExecuTorch          │                        │
-│  │  Google:   TensorFlow, JAX, XLA, TFLite │                        │
-│  │  Microsoft: ONNX Runtime, DeepSpeed     │                        │
-│  │  NVIDIA:   TensorRT-LLM, Triton Server  │                        │
-│  │  HuggingFace: Transformers, Optimum     │                        │
-│  │  Community: vLLM, SGLang, llama.cpp     │                        │
-│  └─────────────────────────────────────────┘                        │
-│                                                                     │
+│  │                                         │                       │
+│  │  Meta:     PyTorch, ExecuTorch          │                       │
+│  │  Google:   TensorFlow, JAX, XLA, TFLite │                       │
+│  │  Microsoft: ONNX Runtime, DeepSpeed     │                       │
+│  │  NVIDIA:   TensorRT-LLM, Triton Server  │                       │
+│  │  HuggingFace: Transformers, Optimum     │                       │
+│  │  Community: vLLM, SGLang, llama.cpp     │                       │
+│  └─────────────────────────────────────────┘                       │
+│                                                                    │
 │  ┌──────────── CLOUD PROVIDERS ───────────┐                        │
-│  │                                         │                        │
+│  │                                         │                       │
 │  │  AWS:       Trainium, Inferentia, SageMaker                     │
-│  │  Google:    TPU, Vertex AI                                       │
-│  │  Azure:     NVIDIA GPUs, ONNX RT        │                        │
-│  │  Oracle:    GPU Cloud, AI infra         │                        │
-│  └─────────────────────────────────────────┘                        │
+│  │  Google:    TPU, Vertex AI                                      │
+│  │  Azure:     NVIDIA GPUs, ONNX RT        │                       │
+│  │  Oracle:    GPU Cloud, AI infra         │                       │
+│  └─────────────────────────────────────────┘                       │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -128,21 +128,21 @@
 
 ```
 ┌──────── Renesas AI Deployment Flow ────────┐
-│                                             │
-│  TensorFlow/PyTorch Model                   │
-│       │                                     │
-│       ▼                                     │
+│                                            │
+│  TensorFlow/PyTorch Model                  │
+│       │                                    │
+│       ▼                                    │
 │  Quantize to INT8 (TFLite / custom)        │
-│       │                                     │
-│       ▼                                     │
+│       │                                    │
+│       ▼                                    │
 │  e-AI Translator / DRP-AI TVM Compiler     │
-│       │                                     │
-│       ▼                                     │
+│       │                                    │
+│       ▼                                    │
 │  Compiled binary for DRP-AI / ARM core     │
-│       │                                     │
-│       ▼                                     │
+│       │                                    │
+│       ▼                                    │
 │  Runs on Renesas RZ/V MCU (1-10 TOPS)      │
-│  (Camera AI, anomaly detection, voice)      │
+│  (Camera AI, anomaly detection, voice)     │
 └─────────────────────────────────────────────┘
 ```
 
@@ -162,22 +162,22 @@
 
 ```
 ┌──────── Synopsys NPU Deployment Flow ──────┐
-│                                             │
-│  Chip Designer (e.g., Samsung) buys         │
+│                                            │
+│  Chip Designer (e.g., Samsung) buys        │
 │  Synopsys ARC NPU IP block                 │
-│       │                                     │
-│       ▼                                     │
+│       │                                    │
+│       ▼                                    │
 │  Integrates NPU into their custom SoC      │
-│       │                                     │
-│       ▼                                     │
-│  App developer uses Synopsys NN SDK to:     │
+│       │                                    │
+│       ▼                                    │
+│  App developer uses Synopsys NN SDK to:    │
 │  1. Import ONNX/TFLite model               │
-│  2. Quantize to INT8/INT4                   │
+│  2. Quantize to INT8/INT4                  │
 │  3. Compile for ARC NPU                    │
-│  4. Deploy to end-user device               │
-│                                             │
-│  Use case: Smart camera, wearable,          │
-│  hearing aid, automotive sensor             │
+│  4. Deploy to end-user device              │
+│                                            │
+│  Use case: Smart camera, wearable,         │
+│  hearing aid, automotive sensor            │
 └─────────────────────────────────────────────┘
 ```
 
