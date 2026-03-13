@@ -10,54 +10,54 @@
 
 ```
 ┌─────────────────────────────── THE DEPLOYMENT UNIVERSE ────────────────────────────────┐
-│                                                                                         │
-│  ┌─────────────────┐   exports to   ┌──────────────────┐   loaded by   ┌─────────────┐│
-│  │ TRAINING         │──────────────►│ MODEL FORMAT      │────────────►│ INFERENCE    ││
+│                                                                                        │
+│  ┌─────────────────┐   exports to   ┌──────────────────┐   loaded by   ┌─────────────┐ │
+│  │ TRAINING         │──────────────►│ MODEL FORMAT      │────────────►│ INFERENCE    │ │
 │  │ FRAMEWORK        │               │                   │              │ ENGINE       ││
 │  │                  │               │ • ONNX             │              │              ││
 │  │ • PyTorch        │               │ • GGUF             │              │ • vLLM       ││
 │  │ • JAX            │               │ • SafeTensors      │              │ • SGLang     ││
 │  │ • TensorFlow     │               │ • TorchScript      │              │ • TRT-LLM   ││
 │  │                  │               │ • TensorRT Engine  │              │ • llama.cpp  ││
-│  └─────────────────┘               └──────────────────┘              └──────┬────────┘│
+│  └─────────────────┘               └──────────────────┘              └──────┬────────┘ │
 │                                                                             │          │
 │                                                                     uses    │          │
 │                                                                             ▼          │
-│  ┌─────────────────┐   generates    ┌──────────────────┐  dispatches ┌─────────────┐  │
+│  ┌─────────────────┐   generates    ┌──────────────────┐  dispatches ┌─────────────┐   │
 │  │ COMPILER         │──────────────►│ KERNEL            │◄───────────│ RUNTIME      │  │
 │  │                  │               │                   │            │              │  │
-│  │ • TVM            │               │ • cuBLAS           │            │ • ONNX RT    │  │
-│  │ • XLA            │               │ • CUTLASS          │            │ • libtorch   │  │
-│  │ • Triton (lang)  │               │ • FlashAttention   │            │ • ggml       │  │
-│  │ • MLIR           │               │ • custom kernels   │            │ • ExecuTorch │  │
+│  │ • TVM            │               │ • cuBLAS           │            │ • ONNX RT    │ │
+│  │ • XLA            │               │ • CUTLASS          │            │ • libtorch   │ │
+│  │ • Triton (lang)  │               │ • FlashAttention   │            │ • ggml       │ │
+│  │ • MLIR           │               │ • custom kernels   │            │ • ExecuTorch │ │
 │  │ • torch.compile  │               │                   │            │              │  │
-│  └─────────────────┘               └────────┬─────────┘            └──────┬────────┘  │
+│  └─────────────────┘               └────────┬─────────┘            └──────┬────────┘   │
 │                                              │                            │            │
 │                                       runs on│                    talks to│            │
 │                                              ▼                            ▼            │
 │                                    ┌──────────────────┐    ┌──────────────────┐        │
-│                                    │ HARDWARE BACKEND  │    │ SERVING LAYER    │        │
-│                                    │                   │    │                  │        │
-│                                    │ • CUDA / cuDNN    │    │ • Triton Server  │        │
-│                                    │ • ROCm / HIP      │    │ • KServe         │        │
-│                                    │ • Metal            │    │ • BentoML        │        │
-│                                    │ • SYCL / oneAPI    │    │ • Ray Serve      │        │
-│                                    │ • Vulkan           │    │                  │        │
+│                                    │ HARDWARE BACKEND  │    │ SERVING LAYER    │       │
+│                                    │                   │    │                  │       │
+│                                    │ • CUDA / cuDNN    │    │ • Triton Server  │       │
+│                                    │ • ROCm / HIP      │    │ • KServe         │       │
+│                                    │ • Metal            │    │ • BentoML        │      │
+│                                    │ • SYCL / oneAPI    │    │ • Ray Serve      │      │
+│                                    │ • Vulkan           │    │                  │      │
 │                                    └────────┬─────────┘    └────────┬─────────┘        │
 │                                              │                      │                  │
 │                                       runs on│              fronted by                 │
 │                                              ▼                      ▼                  │
 │                                    ┌──────────────────┐    ┌──────────────────┐        │
-│                                    │ HARDWARE          │    │ MIDDLEWARE       │        │
-│                                    │                   │    │                  │        │
-│                                    │ • NVIDIA GPU      │    │ • Load Balancer  │        │
-│                                    │ • AMD GPU/CPU     │    │ • API Gateway    │        │
-│                                    │ • Intel CPU/GPU   │    │ • Auth / TLS     │        │
-│                                    │ • Google TPU      │    │ • Rate Limiter   │        │
-│                                    │ • Apple Silicon   │    │ • Monitoring     │        │
+│                                    │ HARDWARE          │    │ MIDDLEWARE       │       │
+│                                    │                   │    │                  │       │
+│                                    │ • NVIDIA GPU      │    │ • Load Balancer  │       │
+│                                    │ • AMD GPU/CPU     │    │ • API Gateway    │       │
+│                                    │ • Intel CPU/GPU   │    │ • Auth / TLS     │       │
+│                                    │ • Google TPU      │    │ • Rate Limiter   │       │
+│                                    │ • Apple Silicon   │    │ • Monitoring     │       │
 │                                    │ • Edge NPU/MCU   │    │                  │        │
 │                                    └──────────────────┘    └──────────────────┘        │
-│                                                                                         │
+│                                                                                        │
 └─────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -263,34 +263,34 @@
 
 ```
 ┌──────────── THE TWO PHASES OF LLM INFERENCE ─────────────┐
-│                                                            │
-│  PREFILL (Prompt Processing)                              │
-│  ├── Processes ALL input tokens in parallel               │
-│  ├── COMPUTE-BOUND (large matrix multiplications)         │
-│  ├── Bottleneck: Tensor Core throughput                   │
+│                                                          │
+│  PREFILL (Prompt Processing)                             │
+│  ├── Processes ALL input tokens in parallel              │
+│  ├── COMPUTE-BOUND (large matrix multiplications)        │
+│  ├── Bottleneck: Tensor Core throughput                  │
 │  ├── Quantization impact: More ops/sec with lower prec   │
-│  │   → FP8/INT8 compute 2× faster than FP16 on tensor   │
-│  │     cores, but this only helps if compute is the       │
-│  │     bottleneck (it is during prefill)                  │
+│  │   → FP8/INT8 compute 2× faster than FP16 on tensor    │
+│  │     cores, but this only helps if compute is the      │
+│  │     bottleneck (it is during prefill)                 │
 │  └── Metric: Time to First Token (TTFT)                  │
-│                                                            │
-│  DECODE (Token Generation)                                │
-│  ├── Generates ONE token at a time (autoregressive)       │
+│                                                          │
+│  DECODE (Token Generation)                               │
+│  ├── Generates ONE token at a time (autoregressive)      │
 │  ├── MEMORY-BANDWIDTH-BOUND (read all weights per token) │
 │  ├── Bottleneck: HBM → SM data transfer speed            │
-│  ├── Quantization impact: Read fewer bytes per token      │
+│  ├── Quantization impact: Read fewer bytes per token     │
 │  │   → INT4 reads 4× less data than FP16 per token       │
 │  │   → This is the PRIMARY reason W4A16 speeds up LLMs!  │
 │  └── Metric: Time Per Output Token (TPOT)                │
-│                                                            │
-│  KEY INSIGHT:                                             │
-│  Weight quantization (W4/W8) helps DECODE most            │
-│  (fewer bytes to read per token).                         │
-│  Activation quantization (A8/A4) helps PREFILL most       │
-│  (more compute ops per second).                           │
-│  This is why W4A16 is so popular — it targets the         │
-│  decode bottleneck without the difficulty of quantizing   │
-│  activations.                                             │
+│                                                          │
+│  KEY INSIGHT:                                            │
+│  Weight quantization (W4/W8) helps DECODE most           │
+│  (fewer bytes to read per token).                        │
+│  Activation quantization (A8/A4) helps PREFILL most      │
+│  (more compute ops per second).                          │
+│  This is why W4A16 is so popular — it targets the        │
+│  decode bottleneck without the difficulty of quantizing  │
+│  activations.                                            │
 └────────────────────────────────────────────────────────────┘
 ```
 

@@ -10,31 +10,31 @@
 
 ```
 ┌──────────────── EDGE DEPLOYMENT SPECTRUM ────────────────────┐
-│                                                                │
+│                                                              │
 │  ◄─── MORE CAPABLE ─────────────────── MORE CONSTRAINED ───► │
-│                                                                │
-│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌─────────┐ ┌─────┐│
-│  │  Desktop  │ │  Phone   │ │  Smart   │ │  IoT    │ │ MCU ││
-│  │  / AI PC  │ │  / Tab   │ │  Camera  │ │ Gateway │ │     ││
-│  ├──────────┤ ├──────────┤ ├──────────┤ ├─────────┤ ├─────┤│
-│  │M4 Ultra  │ │Snapdrgn │ │ MediaTek │ │ Renesas │ │ARM  ││
-│  │RTX 4090  │ │8 Elite  │ │ Dimensity│ │ RZ/V2H │ │M0/M4││
-│  │Arc GPU   │ │Exynos   │ │ Ambarella│ │ NXP     │ │     ││
-│  ├──────────┤ ├──────────┤ ├──────────┤ ├─────────┤ ├─────┤│
-│  │32-192GB  │ │8-16 GB  │ │1-4 GB   │ │256MB-2GB│ │64KB-││
-│  │RAM       │ │RAM      │ │RAM      │ │RAM      │ │2MB  ││
-│  ├──────────┤ ├──────────┤ ├──────────┤ ├─────────┤ ├─────┤│
-│  │LLM 70B  │ │LLM 7B   │ │YOLO,    │ │Small CNN│ │Tiny ││
-│  │Diffusion│ │LLM 3B   │ │MobileNet│ │Anomaly  │ │KWS  ││
-│  │Any model │ │ViT      │ │ResNet   │ │detection│ │Wake ││
-│  ├──────────┤ ├──────────┤ ├──────────┤ ├─────────┤ ├─────┤│
-│  │llama.cpp │ │ExecuTrch│ │TFLite   │ │TFLite   │ │TFLM ││
-│  │ONNX RT  │ │CoreML   │ │SNPE     │ │OpenVINO │ │CMSIS││
-│  │vLLM     │ │MLC-LLM  │ │DRP-AI   │ │DRP-AI   │ │-NN  ││
-│  └──────────┘ └──────────┘ └──────────┘ └─────────┘ └─────┘│
-│                                                                │
-│  Power:  100-500W    5-15W     1-5W      0.1-2W    0.01W    │
-│  TOPS:   100-1000    10-50     2-20      0.5-10    0.01-1   │
+│                                                              │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌─────────┐ ┌─────┐  │
+│  │  Desktop  │ │  Phone   │ │  Smart   │ │  IoT    │ │ MCU │ │
+│  │  / AI PC  │ │  / Tab   │ │  Camera  │ │ Gateway │ │     │ │
+│  ├──────────┤ ├──────────┤ ├──────────┤ ├─────────┤ ├─────┤  │
+│  │M4 Ultra  │ │Snapdrgn │ │ MediaTek │ │ Renesas │ │ARM  │   │
+│  │RTX 4090  │ │8 Elite  │ │ Dimensity│ │ RZ/V2H │ │M0/M4│    │
+│  │Arc GPU   │ │Exynos   │ │ Ambarella│ │ NXP     │ │     │   │
+│  ├──────────┤ ├──────────┤ ├──────────┤ ├─────────┤ ├─────┤  │
+│  │32-192GB  │ │8-16 GB  │ │1-4 GB   │ │256MB-2GB│ │64KB-│    │
+│  │RAM       │ │RAM      │ │RAM      │ │RAM      │ │2MB  │    │
+│  ├──────────┤ ├──────────┤ ├──────────┤ ├─────────┤ ├─────┤  │
+│  │LLM 70B  │ │LLM 7B   │ │YOLO,    │ │Small CNN│ │Tiny │     │
+│  │Diffusion│ │LLM 3B   │ │MobileNet│ │Anomaly  │ │KWS  │     │
+│  │Any model │ │ViT      │ │ResNet   │ │detection│ │Wake │    │
+│  ├──────────┤ ├──────────┤ ├──────────┤ ├─────────┤ ├─────┤  │
+│  │llama.cpp │ │ExecuTrch│ │TFLite   │ │TFLite   │ │TFLM │    │
+│  │ONNX RT  │ │CoreML   │ │SNPE     │ │OpenVINO │ │CMSIS│     │
+│  │vLLM     │ │MLC-LLM  │ │DRP-AI   │ │DRP-AI   │ │-NN  │     │
+│  └──────────┘ └──────────┘ └──────────┘ └─────────┘ └─────┘  │
+│                                                              │
+│  Power:  100-500W    5-15W     1-5W      0.1-2W    0.01W     │
+│  TOPS:   100-1000    10-50     2-20      0.5-10    0.01-1    │
 └────────────────────────────────────────────────────────────────┘
 ```
 
@@ -53,28 +53,28 @@
 
 ```
 ┌──────── ExecuTorch Pipeline ──────────────────┐
-│                                                 │
-│  PyTorch nn.Module                              │
-│       │                                         │
-│       ▼  torch.export.export()                 │
-│  ExportedProgram (ATen IR graph)               │
-│       │                                         │
-│       ▼  Quantize (PT2E flow)                  │
-│  Quantized ExportedProgram                      │
-│       │                                         │
-│       ▼  to_edge() + to_backend()              │
-│  Edge Dialect (optimized for target)            │
-│       │                                         │
+│                                               │
+│  PyTorch nn.Module                            │
+│       │                                       │
+│       ▼  torch.export.export()                │
+│  ExportedProgram (ATen IR graph)              │
+│       │                                       │
+│       ▼  Quantize (PT2E flow)                 │
+│  Quantized ExportedProgram                    │
+│       │                                       │
+│       ▼  to_edge() + to_backend()             │
+│  Edge Dialect (optimized for target)          │
+│       │                                       │
 │       ├──→ XNNPACK delegate (CPU, any platform) │
-│       ├──→ CoreML delegate (Apple devices)      │
-│       ├──→ QNN delegate (Qualcomm Hexagon)      │
-│       └──→ Vulkan delegate (Android GPU)        │
-│       │                                         │
-│       ▼  to_executorch()                       │
-│  .pte file (portable, self-contained)          │
-│       │                                         │
-│       ▼  ExecuTorch Runtime (C++)              │
-│  Runs on device (iOS/Android/Embedded)          │
+│       ├──→ CoreML delegate (Apple devices)    │
+│       ├──→ QNN delegate (Qualcomm Hexagon)    │
+│       └──→ Vulkan delegate (Android GPU)      │
+│       │                                       │
+│       ▼  to_executorch()                      │
+│  .pte file (portable, self-contained)         │
+│       │                                       │
+│       ▼  ExecuTorch Runtime (C++)             │
+│  Runs on device (iOS/Android/Embedded)        │
 └─────────────────────────────────────────────────┘
 ```
 
@@ -164,33 +164,33 @@ mlmodel_quantized.save("model_int8.mlpackage")
 
 ```
 ┌──────── Qualcomm AI Stack ────────────────────┐
-│                                                 │
+│                                               │
 │  PyTorch / TF / ONNX model                    │
-│       │                                         │
-│       ▼                                         │
-│  Qualcomm AI Hub (cloud compilation service)    │
-│  or QNN SDK (local)                             │
-│       │                                         │
-│       ▼ Compile for target SoC                 │
-│  ┌─────────────────────────────────────┐       │
-│  │ Snapdragon 8 Gen 3                   │       │
+│       │                                       │
+│       ▼                                       │
+│  Qualcomm AI Hub (cloud compilation service)  │
+│  or QNN SDK (local)                           │
+│       │                                       │
+│       ▼ Compile for target SoC                │
+│  ┌─────────────────────────────────────┐      │
+│  │ Snapdragon 8 Gen 3                   │     │
 │  │ ┌─────────┐ ┌────────┐ ┌────────┐  │       │
-│  │ │ Hexagon  │ │ Adreno │ │  Kryo  │  │       │
-│  │ │ NPU      │ │ GPU    │ │  CPU   │  │       │
-│  │ │ 73 TOPS  │ │        │ │        │  │       │
-│  │ │ INT4/8   │ │ FP16   │ │ INT8   │  │       │
+│  │ │ Hexagon  │ │ Adreno │ │  Kryo  │  │      │
+│  │ │ NPU      │ │ GPU    │ │  CPU   │  │      │
+│  │ │ 73 TOPS  │ │        │ │        │  │      │
+│  │ │ INT4/8   │ │ FP16   │ │ INT8   │  │      │
 │  │ └─────────┘ └────────┘ └────────┘  │       │
-│  └─────────────────────────────────────┘       │
-│                                                 │
-│  Quantization:                                  │
-│  • Native INT4 on Hexagon (ideal for LLMs)     │
-│  • INT8, INT16 per-channel                     │
-│  • Mixed-precision across NPU/GPU/CPU          │
-│                                                 │
-│  LLM capability (2024+):                        │
-│  • Llama 3 8B runs on Snapdragon X Elite       │
-│  • Phi-3 mini runs on Snapdragon 8 Gen 3       │
-│  • ~30 tokens/sec on-device                    │
+│  └─────────────────────────────────────┘      │
+│                                               │
+│  Quantization:                                │
+│  • Native INT4 on Hexagon (ideal for LLMs)    │
+│  • INT8, INT16 per-channel                    │
+│  • Mixed-precision across NPU/GPU/CPU         │
+│                                               │
+│  LLM capability (2024+):                      │
+│  • Llama 3 8B runs on Snapdragon X Elite      │
+│  • Phi-3 mini runs on Snapdragon 8 Gen 3      │
+│  • ~30 tokens/sec on-device                   │
 └─────────────────────────────────────────────────┘
 ```
 
@@ -207,13 +207,13 @@ Why llama.cpp is the king of edge LLM deployment:
 
 Performance examples (Apple M4 Max, 128GB):
 ┌──────────────────────────────────────────────────┐
-│ Model              │ Quant   │ Size  │ tok/s    │
-│────────────────────│─────────│───────│──────────│
-│ Llama 3 8B         │ Q4_K_M  │ 4.9GB │ ~55 t/s  │
-│ Llama 3 70B        │ Q4_K_M  │ 40GB  │ ~12 t/s  │
-│ Mistral 7B         │ Q5_K_M  │ 5.1GB │ ~50 t/s  │
-│ Phi-3 mini 3.8B    │ Q4_0    │ 2.2GB │ ~80 t/s  │
-│ DeepSeek-R1 671B   │ Q2_K    │ 200GB │ ~2 t/s   │
+│ Model              │ Quant   │ Size  │ tok/s     │
+│────────────────────│─────────│───────│────────── │
+│ Llama 3 8B         │ Q4_K_M  │ 4.9GB │ ~55 t/s   │
+│ Llama 3 70B        │ Q4_K_M  │ 40GB  │ ~12 t/s   │
+│ Mistral 7B         │ Q5_K_M  │ 5.1GB │ ~50 t/s   │
+│ Phi-3 mini 3.8B    │ Q4_0    │ 2.2GB │ ~80 t/s   │
+│ DeepSeek-R1 671B   │ Q2_K    │ 200GB │ ~2 t/s    │
 └──────────────────────────────────────────────────┘
 ```
 
@@ -235,28 +235,28 @@ Performance examples (Apple M4 Max, 128GB):
 Purpose: Run tiny ML models on microcontrollers (no OS required!)
 
 ┌──────── TFLM Architecture ────────────────────┐
-│                                                 │
-│  TFLite Model (.tflite, INT8 quantized)        │
-│       │                                         │
-│       ▼                                         │
-│  TFLM Interpreter (C++, ~20KB binary)          │
-│  ├── Flatbuffer parser (model loading)         │
-│  ├── Memory planner (static arena allocation)  │
-│  ├── Op resolver (registered kernels only)     │
-│  └── Kernel implementations:                   │
-│      ├── Reference (portable, slow)            │
-│      ├── CMSIS-NN (ARM Cortex-M optimized)     │
-│      └── Custom (vendor-specific)              │
-│       │                                         │
-│       ▼                                         │
-│  Runs on:                                       │
-│  • ARM Cortex-M0/M4/M7/M33/M55               │
-│  • ESP32, Arduino                               │
-│  • Renesas RA family                            │
-│  • Any 32-bit MCU with 64KB+ Flash             │
-│                                                 │
-│  Model size limits: ~100KB - 2MB typically     │
-│  Inference time: 10ms - 1000ms per inference   │
+│                                               │
+│  TFLite Model (.tflite, INT8 quantized)       │
+│       │                                       │
+│       ▼                                       │
+│  TFLM Interpreter (C++, ~20KB binary)         │
+│  ├── Flatbuffer parser (model loading)        │
+│  ├── Memory planner (static arena allocation) │
+│  ├── Op resolver (registered kernels only)    │
+│  └── Kernel implementations:                  │
+│      ├── Reference (portable, slow)           │
+│      ├── CMSIS-NN (ARM Cortex-M optimized)    │
+│      └── Custom (vendor-specific)             │
+│       │                                       │
+│       ▼                                       │
+│  Runs on:                                     │
+│  • ARM Cortex-M0/M4/M7/M33/M55                │
+│  • ESP32, Arduino                             │
+│  • Renesas RA family                          │
+│  • Any 32-bit MCU with 64KB+ Flash            │
+│                                               │
+│  Model size limits: ~100KB - 2MB typically    │
+│  Inference time: 10ms - 1000ms per inference  │
 └─────────────────────────────────────────────────┘
 
 Typical TFLM models:
@@ -271,45 +271,45 @@ Typical TFLM models:
 
 ```
 ┌──────── Renesas AI Deployment Stack ──────────┐
-│                                                 │
-│  Target Hardware:                               │
-│  ┌─────────────────────────────────────────┐   │
-│  │ RZ/V2H (flagship AI MPU)                │   │
-│  │ ├── ARM Cortex-A55 (quad core)          │   │
-│  │ ├── ARM Cortex-M33 (real-time)          │   │
-│  │ ├── Mali-G31 GPU                        │   │
+│                                               │
+│  Target Hardware:                             │
+│  ┌─────────────────────────────────────────┐  │
+│  │ RZ/V2H (flagship AI MPU)                │  │
+│  │ ├── ARM Cortex-A55 (quad core)          │  │
+│  │ ├── ARM Cortex-M33 (real-time)          │  │
+│  │ ├── Mali-G31 GPU                        │  │
 │  │ ├── DRP-AI3: 20 TOPS (INT8)            │   │
-│  │ ├── ISP (Image Signal Processor)        │   │
-│  │ └── 4GB LPDDR4x                         │   │
-│  └─────────────────────────────────────────┘   │
-│                                                 │
-│  DRP-AI = Dynamically Reconfigurable Processor │
-│  • Programmable AI accelerator                  │
-│  • Reconfigures its datapath per-layer          │
-│  • INT8 multiply-accumulate                     │
-│  • Power efficient: ~3 TOPS/W                   │
-│                                                 │
-│  Software Flow:                                 │
-│  1. Train in PyTorch/TF → export ONNX          │
-│  2. DRP-AI Translator (ONNX → DRP-AI binary)   │
-│     OR                                          │
-│     DRP-AI TVM (Apache TVM backend for DRP-AI)  │
-│  3. Compile for target RZ/V chip                │
-│  4. Deploy with Renesas e-AI SDK                │
-│                                                 │
-│  Supported Operations:                          │
+│  │ ├── ISP (Image Signal Processor)        │  │
+│  │ └── 4GB LPDDR4x                         │  │
+│  └─────────────────────────────────────────┘  │
+│                                               │
+│  DRP-AI = Dynamically Reconfigurable Processor│
+│  • Programmable AI accelerator                │
+│  • Reconfigures its datapath per-layer        │
+│  • INT8 multiply-accumulate                   │
+│  • Power efficient: ~3 TOPS/W                 │
+│                                               │
+│  Software Flow:                               │
+│  1. Train in PyTorch/TF → export ONNX         │
+│  2. DRP-AI Translator (ONNX → DRP-AI binary)  │
+│     OR                                        │
+│     DRP-AI TVM (Apache TVM backend for DRP-AI)│
+│  3. Compile for target RZ/V chip              │
+│  4. Deploy with Renesas e-AI SDK              │
+│                                               │
+│  Supported Operations:                        │
 │  ✅ Conv2D, DepthwiseConv, FC, BatchNorm       │
-│  ✅ ReLU, Sigmoid, Softmax                      │
-│  ✅ MaxPool, AvgPool, GlobalAvgPool             │
-│  ⚠️ Limited attention support                   │
-│  ❌ No transformer blocks (no LLMs)             │
-│                                                 │
-│  Use Cases:                                     │
-│  • Factory inspection cameras                   │
-│  • Automotive ADAS (object detection)           │
-│  • Smart home cameras (person detection)        │
-│  • Industrial anomaly detection                 │
-│  • Robotics (vision + control)                  │
+│  ✅ ReLU, Sigmoid, Softmax                     │
+│  ✅ MaxPool, AvgPool, GlobalAvgPool            │
+│  ⚠️ Limited attention support                 │
+│  ❌ No transformer blocks (no LLMs)            │
+│                                               │
+│  Use Cases:                                   │
+│  • Factory inspection cameras                 │
+│  • Automotive ADAS (object detection)         │
+│  • Smart home cameras (person detection)      │
+│  • Industrial anomaly detection               │
+│  • Robotics (vision + control)                │
 └─────────────────────────────────────────────────┘
 ```
 
@@ -328,26 +328,26 @@ Typical TFLM models:
 ARM Ethos = licensable NPU IP blocks (like ARM CPU cores)
 
 ┌──────── ARM Ethos Family ─────────────────────┐
-│                                                 │
-│  Ethos-U55: 32-512 MAC/cycle                   │
-│  ├── For Cortex-M class MCUs                   │
-│  ├── INT8/INT16, <1 TOPS                       │
-│  ├── ~0.1mm² area                              │
-│  └── Used in: STM32N6, NXP                     │
-│                                                 │
-│  Ethos-U65: 256-512 MAC/cycle                  │
-│  ├── For Cortex-M/A class (more capable)       │
-│  ├── INT8/INT16, 1-4 TOPS                      │
-│  └── Used in: NXP i.MX 93, Samsung Exynos      │
-│                                                 │
-│  Ethos-U85: Next-gen (2024+)                   │
-│  ├── 2× perf of U65                            │
-│  ├── INT8, INT4 support                        │
-│  └── Transformer-optimized (attention support)  │
-│                                                 │
-│  Software: Vela compiler (TFLite → Ethos)      │
-│  Input: TFLite INT8 quantized model            │
-│  Output: Optimized TFLite with Ethos ops       │
+│                                               │
+│  Ethos-U55: 32-512 MAC/cycle                  │
+│  ├── For Cortex-M class MCUs                  │
+│  ├── INT8/INT16, <1 TOPS                      │
+│  ├── ~0.1mm² area                             │
+│  └── Used in: STM32N6, NXP                    │
+│                                               │
+│  Ethos-U65: 256-512 MAC/cycle                 │
+│  ├── For Cortex-M/A class (more capable)      │
+│  ├── INT8/INT16, 1-4 TOPS                     │
+│  └── Used in: NXP i.MX 93, Samsung Exynos     │
+│                                               │
+│  Ethos-U85: Next-gen (2024+)                  │
+│  ├── 2× perf of U65                           │
+│  ├── INT8, INT4 support                       │
+│  └── Transformer-optimized (attention support)│
+│                                               │
+│  Software: Vela compiler (TFLite → Ethos)     │
+│  Input: TFLite INT8 quantized model           │
+│  Output: Optimized TFLite with Ethos ops      │
 └─────────────────────────────────────────────────┘
 ```
 
@@ -368,35 +368,35 @@ ARM Ethos = licensable NPU IP blocks (like ARM CPU cores)
 
 ```
 ┌──────── How Your Research Connects to Edge ──────────┐
-│                                                        │
-│  YOUR ALGORITHMS        WHERE THEY DEPLOY              │
-│  ──────────────         ──────────────────             │
-│                                                        │
-│  AWQ (W4A16)     ──→   Desktop/Server GPUs             │
-│                         (CUDA tensor cores)             │
-│                         NOT edge MCUs                   │
-│                                                        │
-│  SmoothQuant     ──→   Server GPUs, some mobile NPUs   │
-│  (W8A8)                (universal support)              │
-│                                                        │
-│  Ultra-low-bit   ──→   Edge devices, mobile phones     │
-│  (2-4 bit)              (biggest impact here!)          │
-│                                                        │
-│  KV-cache quant  ──→   LLM serving (server)            │
-│                         Mobile LLM (limited memory)     │
-│                                                        │
+│                                                      │
+│  YOUR ALGORITHMS        WHERE THEY DEPLOY            │
+│  ──────────────         ──────────────────           │
+│                                                      │
+│  AWQ (W4A16)     ──→   Desktop/Server GPUs           │
+│                         (CUDA tensor cores)          │
+│                         NOT edge MCUs                │
+│                                                      │
+│  SmoothQuant     ──→   Server GPUs, some mobile NPUs │
+│  (W8A8)                (universal support)           │
+│                                                      │
+│  Ultra-low-bit   ──→   Edge devices, mobile phones   │
+│  (2-4 bit)              (biggest impact here!)       │
+│                                                      │
+│  KV-cache quant  ──→   LLM serving (server)          │
+│                         Mobile LLM (limited memory)  │
+│                                                      │
 │  Mixed-precision ──→   Edge NPUs (different precisions │
-│                         for different layers)           │
-│                                                        │
-│  GAP IN THE FIELD:                                     │
-│  Most quant research targets NVIDIA GPUs.               │
-│  Edge NPUs (Hexagon, Ethos, DRP-AI) have different     │
-│  constraints:                                           │
-│  • Per-channel scales (not per-group)                   │
-│  • No FP16 activations (INT8 only on many NPUs)        │
-│  • Power budget matters more than latency               │
-│  • Must fit in SRAM (no HBM!)                          │
-│  → W4A8 or W8A8 research for edge NPUs is valuable    │
+│                         for different layers)        │
+│                                                      │
+│  GAP IN THE FIELD:                                   │
+│  Most quant research targets NVIDIA GPUs.            │
+│  Edge NPUs (Hexagon, Ethos, DRP-AI) have different   │
+│  constraints:                                        │
+│  • Per-channel scales (not per-group)                │
+│  • No FP16 activations (INT8 only on many NPUs)      │
+│  • Power budget matters more than latency            │
+│  • Must fit in SRAM (no HBM!)                        │
+│  → W4A8 or W8A8 research for edge NPUs is valuable   │
 └────────────────────────────────────────────────────────┘
 ```
 

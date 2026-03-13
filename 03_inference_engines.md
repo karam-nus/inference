@@ -14,24 +14,24 @@ An inference engine is the **factory manager** for LLM inference. It doesn't jus
 ┌────────────────────────── Inference Engine ──────────────────────────┐
 │                                                                      │
 │  Request Queue ──► Scheduler ──► Batch Assembly ──► Model Execution  │
-│       │                │              │                    │          │
-│       │                │              │                    ▼          │
+│       │                │              │                    │         │
+│       │                │              │                    ▼         │
 │       │                │              │           ┌──────────────┐   │
 │       │                │              │           │ KV-Cache     │   │
 │       │                │              │           │ Manager      │   │
 │       │                │              │           │ (Paged       │   │
 │       │                │              │           │  Attention)  │   │
 │       │                │              │           └──────────────┘   │
-│       │                │              │                    │          │
-│       │                │              │                    ▼          │
+│       │                │              │                    │         │
+│       │                │              │                    ▼         │
 │       │                │              │           ┌──────────────┐   │
 │       │                │              │           │ Sampling     │   │
 │       │                │              │           │ (temp, top-k │   │
 │       │                │              │           │  top-p)      │   │
 │       │                │              │           └──────────────┘   │
-│       │                │              │                    │          │
-│       ◄────────────────┴──────────────┴────────────────────┘          │
-│                     Continuous Batching Loop                          │
+│       │                │              │                    │         │
+│       ◄────────────────┴──────────────┴────────────────────┘         │
+│                     Continuous Batching Loop                         │
 └──────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -86,29 +86,29 @@ All inference engines manage two distinct phases — and quantization affects ea
 
 ```
 ┌─────── PREFILL ──────────────────────── DECODE ──────────────────┐
-│                                          │                        │
-│  Process entire prompt at once           │  Generate 1 token at   │
-│  (parallel matrix multiplications)       │  a time (sequential)   │
-│                                          │                        │
-│  COMPUTE-BOUND                           │  MEMORY-BANDWIDTH      │
-│  Bottleneck: Tensor Core throughput      │  BOUND                 │
-│                                          │  Bottleneck: HBM read  │
-│                                          │  speed (read all       │
-│                                          │  weights per token)    │
-│                                          │                        │
-│  Quantization helps via:                 │  Quantization helps    │
-│  • More ops/sec at lower precision       │  via:                  │
-│    (FP8 = 2× FP16 on tensor cores)     │  • Fewer bytes to      │
-│  • But only if compute is bottleneck     │    read per token      │
-│                                          │  • INT4 = 4× less      │
-│                                          │    bandwidth than FP16 │
-│                                          │                        │
-│  Metric: TTFT (Time to First Token)     │  Metric: TPOT (Time   │
-│                                          │  Per Output Token)     │
-│                                          │                        │
-│  Disaggregated serving runs prefill      │  ...and decode on      │
-│  on compute-optimized GPUs...            │  bandwidth-optimized   │
-│                                          │  GPUs separately       │
+│                                          │                       │
+│  Process entire prompt at once           │  Generate 1 token at  │
+│  (parallel matrix multiplications)       │  a time (sequential)  │
+│                                          │                       │
+│  COMPUTE-BOUND                           │  MEMORY-BANDWIDTH     │
+│  Bottleneck: Tensor Core throughput      │  BOUND                │
+│                                          │  Bottleneck: HBM read │
+│                                          │  speed (read all      │
+│                                          │  weights per token)   │
+│                                          │                       │
+│  Quantization helps via:                 │  Quantization helps   │
+│  • More ops/sec at lower precision       │  via:                 │
+│    (FP8 = 2× FP16 on tensor cores)     │  • Fewer bytes to       │
+│  • But only if compute is bottleneck     │    read per token     │
+│                                          │  • INT4 = 4× less     │
+│                                          │    bandwidth than FP16│
+│                                          │                       │
+│  Metric: TTFT (Time to First Token)     │  Metric: TPOT (Time    │
+│                                          │  Per Output Token)    │
+│                                          │                       │
+│  Disaggregated serving runs prefill      │  ...and decode on     │
+│  on compute-optimized GPUs...            │  bandwidth-optimized  │
+│                                          │  GPUs separately      │
 └──────────────────────────────────────────┴────────────────────────┘
 ```
 
@@ -130,26 +130,26 @@ All major engines (vLLM, SGLang, TRT-LLM, llama.cpp) support all three. GQA is n
 
 ```
 ┌─────────────────────── vLLM Architecture ──────────────────────┐
-│                                                                 │
-│  OpenAI-Compatible API Server                                   │
-│       │                                                         │
-│       ▼                                                         │
-│  AsyncLLMEngine                                                 │
-│       │                                                         │
-│       ├──► Scheduler (continuous batching)                      │
-│       │       │                                                 │
-│       │       ▼                                                 │
+│                                                                │
+│  OpenAI-Compatible API Server                                  │
+│       │                                                        │
+│       ▼                                                        │
+│  AsyncLLMEngine                                                │
+│       │                                                        │
+│       ├──► Scheduler (continuous batching)                     │
+│       │       │                                                │
+│       │       ▼                                                │
 │       ├──► KV Cache Manager (PagedAttention)                   │
-│       │       │                                                 │
-│       │       ▼                                                 │
-│       ├──► Model Executor                                       │
-│       │       │                                                 │
-│       │       ├──► PyTorch model (w/ custom attention backends) │
-│       │       ├──► torch.compile (optional, via Inductor)       │
-│       │       └──► Custom CUDA kernels (FlashAttention, etc.)   │
-│       │                                                         │
+│       │       │                                                │
+│       │       ▼                                                │
+│       ├──► Model Executor                                      │
+│       │       │                                                │
+│       │       ├──► PyTorch model (w/ custom attention backends)│
+│       │       ├──► torch.compile (optional, via Inductor)      │
+│       │       └──► Custom CUDA kernels (FlashAttention, etc.)  │
+│       │                                                        │
 │       └──► Sampler (temperature, top-k, top-p, penalties)      │
-│                                                                 │
+│                                                                │
 │  Hardware: CUDA (primary), ROCm, CPU, XPU, TPU                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -175,23 +175,23 @@ outputs = llm.generate(["Hello, world!"], SamplingParams(temperature=0.7))
 
 ```
 ┌─────────────────────── SGLang Architecture ────────────────────┐
-│                                                                 │
-│  OpenAI-Compatible API                                          │
-│       │                                                         │
-│       ▼                                                         │
+│                                                                │
+│  OpenAI-Compatible API                                         │
+│       │                                                        │
+│       ▼                                                        │
 │  TokenizerManager ──► DetokenizerManager                       │
-│       │                                                         │
-│       ▼                                                         │
-│  Scheduler (zero-overhead CPU scheduler)                        │
-│       │                                                         │
+│       │                                                        │
+│       ▼                                                        │
+│  Scheduler (zero-overhead CPU scheduler)                       │
+│       │                                                        │
 │       ├──► RadixAttention (prefix tree-based KV-cache sharing) │
-│       │                                                         │
-│       ├──► TpModelWorker                                        │
-│       │       │                                                 │
-│       │       └──► PyTorch model + FlashInfer attention         │
-│       │                                                         │
+│       │                                                        │
+│       ├──► TpModelWorker                                       │
+│       │       │                                                │
+│       │       └──► PyTorch model + FlashInfer attention        │
+│       │                                                        │
 │       └──► Constrained Decoding (grammar/regex/JSON)           │
-│                                                                 │
+│                                                                │
 │  Hardware: CUDA (primary), ROCm, CPU, TPU (JAX)                │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -206,27 +206,27 @@ outputs = llm.generate(["Hello, world!"], SamplingParams(temperature=0.7))
 
 ```
 ┌──────────────────── TensorRT-LLM Architecture ─────────────────┐
-│                                                                  │
-│  Python LLM API / C++ Runtime                                    │
-│       │                                                          │
-│       ▼                                                          │
-│  PyTorch-native Model Definition                                 │
-│       │                                                          │
-│       ├──► torch.compile + TensorRT backend                     │
-│       │       │                                                  │
-│       │       └──► NVIDIA custom kernels                        │
-│       │           ├── FP8/FP4 GEMM (Blackwell native)           │
-│       │           ├── FlashAttention (fused)                     │
-│       │           ├── CUTLASS kernels                            │
-│       │           └── Custom MoE kernels                         │
-│       │                                                          │
-│       ├──► Inflight Batching + Paged KV-Cache                   │
-│       ├──► Multi-GPU (TP/PP/EP)                                 │
-│       ├──► Speculative Decoding (EAGLE/MTP/Draft)               │
-│       └──► Quantization (FP8, FP4, INT4 AWQ, INT8 SQ)         │
-│                                                                  │
-│  Integration: NVIDIA Triton Server, NVIDIA Dynamo               │
-│  Hardware: NVIDIA GPUs ONLY (H100/A100/B200/GB200)              │
+│                                                                │
+│  Python LLM API / C++ Runtime                                  │
+│       │                                                        │
+│       ▼                                                        │
+│  PyTorch-native Model Definition                               │
+│       │                                                        │
+│       ├──► torch.compile + TensorRT backend                    │
+│       │       │                                                │
+│       │       └──► NVIDIA custom kernels                       │
+│       │           ├── FP8/FP4 GEMM (Blackwell native)          │
+│       │           ├── FlashAttention (fused)                   │
+│       │           ├── CUTLASS kernels                          │
+│       │           └── Custom MoE kernels                       │
+│       │                                                        │
+│       ├──► Inflight Batching + Paged KV-Cache                  │
+│       ├──► Multi-GPU (TP/PP/EP)                                │
+│       ├──► Speculative Decoding (EAGLE/MTP/Draft)              │
+│       └──► Quantization (FP8, FP4, INT4 AWQ, INT8 SQ)          │
+│                                                                │
+│  Integration: NVIDIA Triton Server, NVIDIA Dynamo              │
+│  Hardware: NVIDIA GPUs ONLY (H100/A100/B200/GB200)             │
 └──────────────────────────────────────────────────────────────────┘
 ```
 
@@ -240,27 +240,27 @@ outputs = llm.generate(["Hello, world!"], SamplingParams(temperature=0.7))
 
 ```
 ┌────────────────────── llama.cpp Architecture ──────────────────┐
-│                                                                 │
-│  CLI tools (llama-cli, llama-server)                            │
-│       │                                                         │
-│       ▼                                                         │
+│                                                                │
+│  CLI tools (llama-cli, llama-server)                           │
+│       │                                                        │
+│       ▼                                                        │
 │  llama.h / llama.cpp (C/C++ core)                              │
-│       │                                                         │
-│       ▼                                                         │
-│  ggml (tensor computation library)                              │
-│       │                                                         │
-│       ├──► CPU: AVX/AVX2/AVX512/AMX/NEON/SVE/RVV              │
+│       │                                                        │
+│       ▼                                                        │
+│  ggml (tensor computation library)                             │
+│       │                                                        │
+│       ├──► CPU: AVX/AVX2/AVX512/AMX/NEON/SVE/RVV               │
 │       ├──► NVIDIA GPU: CUDA (custom kernels)                   │
 │       ├──► AMD GPU: HIP/ROCm                                   │
-│       ├──► Apple Silicon: Metal                                 │
-│       ├──► Intel GPU: SYCL                                      │
-│       ├──► Vulkan (any GPU)                                     │
+│       ├──► Apple Silicon: Metal                                │
+│       ├──► Intel GPU: SYCL                                     │
+│       ├──► Vulkan (any GPU)                                    │
 │       ├──► CANN (Huawei Ascend)                                │
 │       ├──► OpenCL (Qualcomm Adreno)                            │
-│       └──► Many more backends                                   │
-│                                                                 │
-│  Model Format: GGUF (with custom quantization types)            │
-│  Quantization: Q2_K, Q3_K, Q4_0, Q4_K, Q5_K, Q6_K, Q8_0,    │
+│       └──► Many more backends                                  │
+│                                                                │
+│  Model Format: GGUF (with custom quantization types)           │
+│  Quantization: Q2_K, Q3_K, Q4_0, Q4_K, Q5_K, Q6_K, Q8_0,       │
 │                IQ1-IQ4 (importance-based), F16, BF16           │
 └─────────────────────────────────────────────────────────────────┘
 ```

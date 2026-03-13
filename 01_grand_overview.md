@@ -13,35 +13,35 @@
 │                    LAYER 7: APPLICATION / API                       │
 │  OpenAI-compatible API, Chat UI, RAG pipeline, Agent framework      │
 ├─────────────────────────────────────────────────────────────────────┤
-│                    LAYER 6: MIDDLEWARE                               │
+│                    LAYER 6: MIDDLEWARE                              │
 │  Load balancer, API gateway, auth, rate limiting, monitoring        │
 │  (Envoy, Nginx, Kong, custom)                                       │
 ├─────────────────────────────────────────────────────────────────────┤
 │                    LAYER 5: SERVING INFRASTRUCTURE                  │
-│  NVIDIA Triton Inference Server, KServe, BentoML, Ray Serve        │
+│  NVIDIA Triton Inference Server, KServe, BentoML, Ray Serve         │
 │  (Model management, scaling, multi-model, A/B testing)              │
 ├─────────────────────────────────────────────────────────────────────┤
 │                    LAYER 4: INFERENCE ENGINE                        │
-│  vLLM, SGLang, TensorRT-LLM, llama.cpp, MLC-LLM                   │
+│  vLLM, SGLang, TensorRT-LLM, llama.cpp, MLC-LLM                     │
 │  (Batching, KV-cache, PagedAttention, scheduling, speculative dec.) │
 ├─────────────────────────────────────────────────────────────────────┤
 │                    LAYER 3: RUNTIME / EXECUTION PROVIDER            │
-│  ONNX Runtime, libtorch, ExecuTorch, ggml                          │
+│  ONNX Runtime, libtorch, ExecuTorch, ggml                           │
 │  (Graph optimization, op dispatch, memory management)               │
 ├─────────────────────────────────────────────────────────────────────┤
-│                    LAYER 2: COMPILER / KERNEL LIBRARIES              │
-│  TVM, XLA, Triton (compiler), MLIR, torch.compile/Inductor         │
-│  cuBLAS, CUTLASS, cuDNN, MIOpen, oneDNN, Metal Performance Shaders │
+│                    LAYER 2: COMPILER / KERNEL LIBRARIES             │
+│  TVM, XLA, Triton (compiler), MLIR, torch.compile/Inductor          │
+│  cuBLAS, CUTLASS, cuDNN, MIOpen, oneDNN, Metal Performance Shaders  │
 │  (Kernel generation, graph lowering, hardware-specific optimization)│
 ├─────────────────────────────────────────────────────────────────────┤
 │                    LAYER 1: HARDWARE BACKEND / DRIVER               │
-│  CUDA (NVIDIA), ROCm/HIP (AMD), SYCL/oneAPI (Intel), Metal (Apple) │
+│  CUDA (NVIDIA), ROCm/HIP (AMD), SYCL/oneAPI (Intel), Metal (Apple)  │
 │  Vulkan, OpenCL, proprietary NPU SDKs                               │
 ├─────────────────────────────────────────────────────────────────────┤
 │                    LAYER 0: HARDWARE                                │
-│  NVIDIA GPUs (H100/B200/GB200), AMD GPUs (MI300X/MI355X)           │
+│  NVIDIA GPUs (H100/B200/GB200), AMD GPUs (MI300X/MI355X)            │
 │  Intel CPUs/GPUs (Xeon/Gaudi), Google TPUs, Apple Silicon           │
-│  Qualcomm NPUs, Renesas AI Accelerators, Synopsys ARC NPUs        │
+│  Qualcomm NPUs, Renesas AI Accelerators, Synopsys ARC NPUs          │
 │  AWS Trainium/Inferentia, Groq LPUs, Cerebras WSE                   │
 └─────────────────────────────────────────────────────────────────────┘
 ```
@@ -84,16 +84,16 @@ The inference engine handles the *LLM-specific* optimizations:
 
 ```
 ┌─────────────── Inference Engine Responsibilities ───────────────┐
-│                                                                  │
-│  ● Continuous Batching    — serve many users simultaneously      │
-│  ● KV-Cache Management   — PagedAttention (like virtual memory)  │
-│  ● Scheduling             — which requests to process when       │
-│  ● Speculative Decoding   — predict multiple tokens at once      │
-│  ● Tensor/Expert Parallel — split model across GPUs              │
-│  ● Prefix Caching         — reuse KV-cache for shared prompts    │
-│  ● Quantized Execution    — dispatch to INT4/INT8/FP8 kernels    │
-│  ● Structured Output      — JSON/grammar-constrained generation  │
-│                                                                  │
+│                                                                 │
+│  ● Continuous Batching    — serve many users simultaneously     │
+│  ● KV-Cache Management   — PagedAttention (like virtual memory) │
+│  ● Scheduling             — which requests to process when      │
+│  ● Speculative Decoding   — predict multiple tokens at once     │
+│  ● Tensor/Expert Parallel — split model across GPUs             │
+│  ● Prefix Caching         — reuse KV-cache for shared prompts   │
+│  ● Quantized Execution    — dispatch to INT4/INT8/FP8 kernels   │
+│  ● Structured Output      — JSON/grammar-constrained generation │
+│                                                                 │
 └──────────────────────────────────────────────────────────────────┘
 ```
 
@@ -104,14 +104,14 @@ Inference Engine says: "Execute this INT4 matmul"
          │
          ▼
 ┌─── Runtime Layer ───┐
-│                      │
+│                     │
 │  "Which hardware?"   │──► NVIDIA GPU → cuBLAS / CUTLASS INT4 kernel
 │                      │──► AMD GPU    → MIOpen / hipBLAS kernel
 │                      │──► Intel CPU  → oneDNN / AMX INT8 kernel
 │                      │──► Apple M-series → Metal + Accelerate
 │                      │──► Google TPU → XLA compiled kernel
 │                      │──► Edge NPU  → Vendor SDK kernel
-│                      │
+│                     │
 └──────────────────────┘
 ```
 

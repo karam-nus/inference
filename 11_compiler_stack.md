@@ -17,26 +17,26 @@ The Problem:
 Who translates? THE COMPILER STACK.
 
 ┌───────── WITHOUT ML COMPILERS ─────────────────────┐
-│                                                      │
-│  PyTorch → Hand-written CUDA kernels for every op   │
-│                                                      │
-│  Problems:                                           │
-│  • 100s of ops × 10s of hardware targets = 1000s    │
-│    of hand-written kernels                           │
-│  • No cross-op optimization (fusion)                 │
-│  • Every new op needs new kernel for every HW       │
-│  • Quantized ops multiply the problem               │
+│                                                    │
+│  PyTorch → Hand-written CUDA kernels for every op  │
+│                                                    │
+│  Problems:                                         │
+│  • 100s of ops × 10s of hardware targets = 1000s   │
+│    of hand-written kernels                         │
+│  • No cross-op optimization (fusion)               │
+│  • Every new op needs new kernel for every HW      │
+│  • Quantized ops multiply the problem              │
 └──────────────────────────────────────────────────────┘
 
 ┌───────── WITH ML COMPILERS ────────────────────────┐
-│                                                      │
+│                                                    │
 │  PyTorch → IR (graph) → Compiler → Optimized code  │
-│                                                      │
-│  Benefits:                                           │
-│  • Automatic op fusion                               │
-│  • Hardware-specific code generation                 │
-│  • New hardware = new backend (not rewrite all ops)  │
-│  • Quantized ops can be lowered automatically        │
+│                                                    │
+│  Benefits:                                         │
+│  • Automatic op fusion                             │
+│  • Hardware-specific code generation               │
+│  • New hardware = new backend (not rewrite all ops)│
+│  • Quantized ops can be lowered automatically      │
 └──────────────────────────────────────────────────────┘
 ```
 
@@ -44,40 +44,40 @@ Who translates? THE COMPILER STACK.
 
 ```
 ┌──────────── ML COMPILER STACK (Layers) ──────────────────────┐
-│                                                                │
-│  HIGH-LEVEL FRAMEWORKS                                        │
-│  ┌────────────────────────────────────────────────────────┐   │
-│  │ PyTorch, JAX, TensorFlow, ONNX                         │   │
-│  └──────────────────────────┬─────────────────────────────┘   │
-│                              │                                 │
-│  GRAPH CAPTURE / TRACING     │                                 │
+│                                                              │
+│  HIGH-LEVEL FRAMEWORKS                                       │
+│  ┌────────────────────────────────────────────────────────┐  │
+│  │ PyTorch, JAX, TensorFlow, ONNX                         │  │
+│  └──────────────────────────┬─────────────────────────────┘  │
+│                              │                               │
+│  GRAPH CAPTURE / TRACING     │                               │
 │  ┌──────────────────────────┴──────────────────────────┐     │
-│  │ torch.compile (Dynamo), tf.function, jax.jit         │     │
-│  │ torch.export, fx.symbolic_trace                      │     │
+│  │ torch.compile (Dynamo), tf.function, jax.jit         │    │
+│  │ torch.export, fx.symbolic_trace                      │    │
 │  └──────────────────────────┬──────────────────────────┘     │
-│                              │                                 │
-│  HIGH-LEVEL IR               │                                 │
+│                              │                               │
+│  HIGH-LEVEL IR               │                               │
 │  ┌──────────────────────────┴──────────────────────────┐     │
-│  │ torch.fx Graph, HLO (JAX/XLA), TF Graph, ONNX Graph│     │
+│  │ torch.fx Graph, HLO (JAX/XLA), TF Graph, ONNX Graph│      │
 │  └──────────────────────────┬──────────────────────────┘     │
-│                              │                                 │
-│  GRAPH OPTIMIZATIONS         │                                 │
+│                              │                               │
+│  GRAPH OPTIMIZATIONS         │                               │
 │  ┌──────────────────────────┴──────────────────────────┐     │
-│  │ Operator fusion, constant folding, dead code elim,   │     │
-│  │ layout optimization, common subexpression elimination│     │
+│  │ Operator fusion, constant folding, dead code elim,   │    │
+│  │ layout optimization, common subexpression elimination│    │
 │  └──────────────────────────┬──────────────────────────┘     │
-│                              │                                 │
-│  MID-LEVEL IR                │                                 │
+│                              │                               │
+│  MID-LEVEL IR                │                               │
 │  ┌──────────────────────────┴──────────────────────────┐     │
-│  │ Triton IR, TVM TIR, Linalg (MLIR), StableHLO       │     │
+│  │ Triton IR, TVM TIR, Linalg (MLIR), StableHLO       │      │
 │  └──────────────────────────┬──────────────────────────┘     │
-│                              │                                 │
-│  LOW-LEVEL IR / CODE GEN     │                                 │
+│                              │                               │
+│  LOW-LEVEL IR / CODE GEN     │                               │
 │  ┌──────────────────────────┴──────────────────────────┐     │
-│  │ LLVM IR, PTX (NVIDIA), GCN ISA (AMD), SPIR-V       │     │
+│  │ LLVM IR, PTX (NVIDIA), GCN ISA (AMD), SPIR-V       │      │
 │  └──────────────────────────┬──────────────────────────┘     │
-│                              │                                 │
-│  MACHINE CODE                │                                 │
+│                              │                               │
+│  MACHINE CODE                │                               │
 │  ┌──────────────────────────┴──────────────────────────┐     │
 │  │ SASS (NVIDIA), binary (CPU), AMDGPU binary          │     │
 │  └─────────────────────────────────────────────────────┘     │
@@ -92,36 +92,36 @@ Who translates? THE COMPILER STACK.
 The most important compiler for your work as a PyTorch researcher.
 
 ┌──────── torch.compile Architecture ───────────────────┐
-│                                                         │
-│  @torch.compile                                        │
-│  def my_model(x):                                      │
-│      return model(x)                                    │
-│                                                         │
-│  Step 1: TorchDynamo (Graph Capture)                   │
-│  ├── Intercepts Python bytecode                        │
-│  ├── Traces PyTorch operations                         │
-│  ├── Handles control flow via graph breaks             │
-│  └── Outputs: torch.fx.GraphModule                     │
-│                                                         │
-│  Step 2: AOTAutograd (Optional: backward graph)        │
-│  ├── Traces backward pass                              │
-│  └── Decomposes ops to ATen primitives                 │
-│                                                         │
-│  Step 3: Inductor Backend (Default)                    │
-│  ┌────────────────────────────────────────┐            │
-│  │  Graph Optimization Passes:            │            │
-│  │  • Operator fusion (matmul + bias +    │            │
-│  │    activation → single kernel)         │            │
-│  │  • Memory planning                     │            │
-│  │  • Layout optimization                 │            │
-│  │                                         │            │
-│  │  Code Generation:                       │            │
-│  │  ├── GPU: Generates Triton kernels     │            │
-│  │  ├── CPU: Generates C++/OpenMP         │            │
-│  │  └── Compiles to binary                │            │
-│  └────────────────────────────────────────┘            │
-│                                                         │
-│  Result: JIT-compiled, fused, optimized execution      │
+│                                                       │
+│  @torch.compile                                       │
+│  def my_model(x):                                     │
+│      return model(x)                                  │
+│                                                       │
+│  Step 1: TorchDynamo (Graph Capture)                  │
+│  ├── Intercepts Python bytecode                       │
+│  ├── Traces PyTorch operations                        │
+│  ├── Handles control flow via graph breaks            │
+│  └── Outputs: torch.fx.GraphModule                    │
+│                                                       │
+│  Step 2: AOTAutograd (Optional: backward graph)       │
+│  ├── Traces backward pass                             │
+│  └── Decomposes ops to ATen primitives                │
+│                                                       │
+│  Step 3: Inductor Backend (Default)                   │
+│  ┌────────────────────────────────────────┐           │
+│  │  Graph Optimization Passes:            │           │
+│  │  • Operator fusion (matmul + bias +    │           │
+│  │    activation → single kernel)         │           │
+│  │  • Memory planning                     │           │
+│  │  • Layout optimization                 │           │
+│  │                                         │          │
+│  │  Code Generation:                       │          │
+│  │  ├── GPU: Generates Triton kernels     │           │
+│  │  ├── CPU: Generates C++/OpenMP         │           │
+│  │  └── Compiles to binary                │           │
+│  └────────────────────────────────────────┘           │
+│                                                       │
+│  Result: JIT-compiled, fused, optimized execution     │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -153,33 +153,33 @@ def quantized_linear(x, qweight, scales, zeros):
 Triton (OpenAI) = A Python-like language for writing GPU kernels
 
 ┌──────── Triton Compiler Pipeline ─────────────────────┐
-│                                                         │
-│  @triton.jit                                           │
+│                                                       │
+│  @triton.jit                                          │
 │  def matmul_kernel(a_ptr, b_ptr, c_ptr, ...):         │
-│      # Python-like syntax, block-level programming     │
-│      offs = tl.arange(0, BLOCK_SIZE)                   │
-│      a = tl.load(a_ptr + offs)                         │
-│      b = tl.load(b_ptr + offs)                         │
-│      c = tl.dot(a, b)                                  │
-│      tl.store(c_ptr + offs, c)                         │
-│                                                         │
-│       │                                                 │
-│       ▼  Triton Frontend                               │
-│  Triton IR (MLIR-based)                                │
-│       │                                                 │
-│       ▼  Optimization Passes                           │
-│  ├── Coalesce memory accesses                          │
-│  ├── Software pipelining                               │
-│  ├── Shared memory allocation                          │
-│  └── Warp-level optimization                           │
-│       │                                                 │
-│       ▼  Backend                                        │
+│      # Python-like syntax, block-level programming    │
+│      offs = tl.arange(0, BLOCK_SIZE)                  │
+│      a = tl.load(a_ptr + offs)                        │
+│      b = tl.load(b_ptr + offs)                        │
+│      c = tl.dot(a, b)                                 │
+│      tl.store(c_ptr + offs, c)                        │
+│                                                       │
+│       │                                               │
+│       ▼  Triton Frontend                              │
+│  Triton IR (MLIR-based)                               │
+│       │                                               │
+│       ▼  Optimization Passes                          │
+│  ├── Coalesce memory accesses                         │
+│  ├── Software pipelining                              │
+│  ├── Shared memory allocation                         │
+│  └── Warp-level optimization                          │
+│       │                                               │
+│       ▼  Backend                                      │
 │  ├── NVIDIA: Triton IR → PTX → SASS (cubin)           │
 │  ├── AMD: Triton IR → AMDGPU IR → ISA                 │
 │  └── Intel: Triton IR → SPIR-V / Gen ISA              │
-│                                                         │
-│  Key advantage: Write ONCE, run on NVIDIA/AMD/Intel    │
-│  Much easier than raw CUDA, almost as fast             │
+│                                                       │
+│  Key advantage: Write ONCE, run on NVIDIA/AMD/Intel   │
+│  Much easier than raw CUDA, almost as fast            │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -237,36 +237,36 @@ def awq_dequant_matmul_kernel(
 Google's compiler, primary backend for JAX and TensorFlow
 
 ┌──────── XLA Architecture ─────────────────────────────┐
-│                                                         │
-│  JAX (jax.jit) / TensorFlow (tf.function)              │
-│       │                                                 │
-│       ▼                                                 │
-│  StableHLO (Stable High-Level Operations)              │
-│  ├── Hardware-independent IR                            │
-│  ├── ~100 operations (dot, conv, reduce, ...)          │
-│  └── Supports dynamic shapes                           │
-│       │                                                 │
-│       ▼                                                 │
-│  XLA HLO (XLA's internal IR)                           │
-│  ├── Graph optimization passes:                        │
-│  │   ├── Algebraic simplification                      │
-│  │   ├── Op fusion (element-wise chains)               │
-│  │   ├── Buffer assignment (memory planning)           │
-│  │   └── Layout assignment (row-major, tiled, etc.)    │
-│  │                                                      │
-│  │  Quantization in XLA:                                │
+│                                                       │
+│  JAX (jax.jit) / TensorFlow (tf.function)             │
+│       │                                               │
+│       ▼                                               │
+│  StableHLO (Stable High-Level Operations)             │
+│  ├── Hardware-independent IR                          │
+│  ├── ~100 operations (dot, conv, reduce, ...)         │
+│  └── Supports dynamic shapes                          │
+│       │                                               │
+│       ▼                                               │
+│  XLA HLO (XLA's internal IR)                          │
+│  ├── Graph optimization passes:                       │
+│  │   ├── Algebraic simplification                     │
+│  │   ├── Op fusion (element-wise chains)              │
+│  │   ├── Buffer assignment (memory planning)          │
+│  │   └── Layout assignment (row-major, tiled, etc.)   │
+│  │                                                    │
+│  │  Quantization in XLA:                              │
 │  │  ├── AQT (Accurate Quantized Training) for JAX     │
-│  │  ├── INT8 matmul via custom calls                   │
-│  │  └── Per-channel quantization supported             │
-│  │                                                      │
-│       ▼  Target-specific backend                       │
-│  ├── GPU: CUDA/cuDNN/cuBLAS calls                      │
-│  ├── TPU: TPU-specific instructions (MXU ops)          │
-│  ├── CPU: LLVM code generation                         │
-│  └── Plugin API for custom accelerators                │
-│                                                         │
-│  Key: XLA is the ONLY way to target Google TPUs        │
-│  JAX + XLA = the "functional compilation" approach     │
+│  │  ├── INT8 matmul via custom calls                  │
+│  │  └── Per-channel quantization supported            │
+│  │                                                    │
+│       ▼  Target-specific backend                      │
+│  ├── GPU: CUDA/cuDNN/cuBLAS calls                     │
+│  ├── TPU: TPU-specific instructions (MXU ops)         │
+│  ├── CPU: LLVM code generation                        │
+│  └── Plugin API for custom accelerators               │
+│                                                       │
+│  Key: XLA is the ONLY way to target Google TPUs       │
+│  JAX + XLA = the "functional compilation" approach    │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -276,41 +276,41 @@ Google's compiler, primary backend for JAX and TensorFlow
 The most hardware-agnostic ML compiler
 
 ┌──────── TVM Architecture ─────────────────────────────┐
-│                                                         │
+│                                                       │
 │  Input: PyTorch, TF, ONNX, MXNet model                │
-│       │                                                 │
-│       ▼  Frontend Import                               │
-│  Relay IR (high-level, functional graph IR)             │
-│  ├── Type-checked, functional                          │
-│  ├── Hardware-independent                              │
-│  └── Graph-level optimizations (fusion, folding)       │
-│       │                                                 │
-│       ▼  Lower to TIR                                  │
-│  TIR (Tensor IR — loop-level IR)                       │
-│  ├── Loop nests for each operator                      │
-│  ├── Scheduling primitives:                            │
-│  │   ├── split, reorder, vectorize                     │
-│  │   ├── compute_at, cache_read/write                  │
-│  │   └── parallel, unroll, bind (to GPU threads)       │
+│       │                                               │
+│       ▼  Frontend Import                              │
+│  Relay IR (high-level, functional graph IR)           │
+│  ├── Type-checked, functional                         │
+│  ├── Hardware-independent                             │
+│  └── Graph-level optimizations (fusion, folding)      │
+│       │                                               │
+│       ▼  Lower to TIR                                 │
+│  TIR (Tensor IR — loop-level IR)                      │
+│  ├── Loop nests for each operator                     │
+│  ├── Scheduling primitives:                           │
+│  │   ├── split, reorder, vectorize                    │
+│  │   ├── compute_at, cache_read/write                 │
+│  │   └── parallel, unroll, bind (to GPU threads)      │
 │  └── Auto-scheduling: MetaSchedule / AutoTVM          │
-│       │                                                 │
-│       ▼  Code Generation                               │
-│  ├── CUDA (NVIDIA GPUs)                                │
-│  ├── OpenCL (mobile GPUs, FPGAs)                       │
-│  ├── Metal (Apple)                                      │
-│  ├── Vulkan (cross-platform GPU)                       │
-│  ├── LLVM (CPUs)                                       │
-│  ├── C (microcontrollers — µTVM)                       │
-│  ├── Hexagon (Qualcomm)                                │
-│  ├── CMSIS-NN (ARM Cortex-M)                           │
-│  ├── Ethos-U (ARM NPU)                                 │
-│  ├── DRP-AI (Renesas)    ← Your company!               │
-│  └── WebGPU / WASM (browser)                           │
-│                                                         │
-│  Key TVM features:                                      │
-│  • Auto-tuning: Search for best schedule per operator  │
-│  • µTVM: Compile for bare-metal microcontrollers       │
-│  • Quantization: Built-in quantization passes          │
+│       │                                               │
+│       ▼  Code Generation                              │
+│  ├── CUDA (NVIDIA GPUs)                               │
+│  ├── OpenCL (mobile GPUs, FPGAs)                      │
+│  ├── Metal (Apple)                                    │
+│  ├── Vulkan (cross-platform GPU)                      │
+│  ├── LLVM (CPUs)                                      │
+│  ├── C (microcontrollers — µTVM)                      │
+│  ├── Hexagon (Qualcomm)                               │
+│  ├── CMSIS-NN (ARM Cortex-M)                          │
+│  ├── Ethos-U (ARM NPU)                                │
+│  ├── DRP-AI (Renesas)    ← Your company!              │
+│  └── WebGPU / WASM (browser)                          │
+│                                                       │
+│  Key TVM features:                                    │
+│  • Auto-tuning: Search for best schedule per operator │
+│  • µTVM: Compile for bare-metal microcontrollers      │
+│  • Quantization: Built-in quantization passes         │
 │  • MLC-LLM: LLM runtime built on TVM                  │
 └─────────────────────────────────────────────────────────┘
 ```
@@ -350,46 +350,46 @@ MLIR = Framework for building compilers (not a compiler itself!)
 Created by Chris Lattner (also created LLVM, Swift, Clang)
 
 ┌──────── MLIR Architecture ────────────────────────────┐
-│                                                         │
-│  MLIR is a COMPILER INFRASTRUCTURE — a set of          │
-│  reusable components for building ML compilers.        │
-│                                                         │
-│  Key concept: DIALECTS                                  │
-│  Each dialect defines ops at a different abstraction:   │
-│                                                         │
-│  ┌─── High-Level Dialects ────┐                        │
-│  │ • StableHLO (XLA/JAX ops)  │                        │
+│                                                       │
+│  MLIR is a COMPILER INFRASTRUCTURE — a set of         │
+│  reusable components for building ML compilers.       │
+│                                                       │
+│  Key concept: DIALECTS                                │
+│  Each dialect defines ops at a different abstraction: │
+│                                                       │
+│  ┌─── High-Level Dialects ────┐                       │
+│  │ • StableHLO (XLA/JAX ops)  │                       │
 │  │ • TOSA (portable ML ops)   │ ← Quantization-aware! │
-│  │ • Linalg (linear algebra)  │                        │
-│  └──────────────┬─────────────┘                        │
-│                  │ Progressive lowering                  │
-│  ┌──────────────▼─────────────┐                        │
-│  │ • Affine (loop analysis)   │                        │
-│  │ • SCF (structured control  │                        │
-│  │        flow)               │                        │
-│  │ • Vector (SIMD ops)        │                        │
-│  └──────────────┬─────────────┘                        │
-│                  │                                       │
-│  ┌──────────────▼─────────────┐                        │
-│  │ • GPU dialect              │                        │
-│  │ • LLVM dialect             │ → LLVM IR → machine    │
-│  │ • SPIR-V dialect           │   code                 │
-│  └────────────────────────────┘                        │
-│                                                         │
-│  Who uses MLIR?                                         │
+│  │ • Linalg (linear algebra)  │                       │
+│  └──────────────┬─────────────┘                       │
+│                  │ Progressive lowering               │
+│  ┌──────────────▼─────────────┐                       │
+│  │ • Affine (loop analysis)   │                       │
+│  │ • SCF (structured control  │                       │
+│  │        flow)               │                       │
+│  │ • Vector (SIMD ops)        │                       │
+│  └──────────────┬─────────────┘                       │
+│                  │                                    │
+│  ┌──────────────▼─────────────┐                       │
+│  │ • GPU dialect              │                       │
+│  │ • LLVM dialect             │ → LLVM IR → machine   │
+│  │ • SPIR-V dialect           │   code                │
+│  └────────────────────────────┘                       │
+│                                                       │
+│  Who uses MLIR?                                       │
 │  • XLA (StableHLO → MLIR → TPU/GPU code)              │
 │  • Triton (Triton → MLIR → PTX)                       │
-│  • IREE (Google's edge compiler via MLIR)              │
+│  • IREE (Google's edge compiler via MLIR)             │
 │  • ONNX-MLIR (ONNX → MLIR → native code)              │
-│  • torch-mlir (PyTorch FX → MLIR)                      │
-│  • Many hardware vendors (custom backends)             │
-│                                                         │
-│  TOSA Dialect (Tensor Operator Set Architecture):       │
-│  • Standardized set of ~80 tensor ops                  │
-│  • Includes quantized variants (rescale, clamp)        │
-│  • Designed for portability across NPUs                │
-│  • ARM, Qualcomm, many vendors support TOSA            │
-│  → Future of portable quantized model deployment!      │
+│  • torch-mlir (PyTorch FX → MLIR)                     │
+│  • Many hardware vendors (custom backends)            │
+│                                                       │
+│  TOSA Dialect (Tensor Operator Set Architecture):     │
+│  • Standardized set of ~80 tensor ops                 │
+│  • Includes quantized variants (rescale, clamp)       │
+│  • Designed for portability across NPUs               │
+│  • ARM, Qualcomm, many vendors support TOSA           │
+│  → Future of portable quantized model deployment!     │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -402,37 +402,37 @@ These are NOT compilers, but TEMPLATE LIBRARIES for writing
 high-performance kernels. They sit between compiler and hand-tuned code.
 
 ┌──────── CUTLASS (NVIDIA) ─────────────────────────────┐
-│                                                         │
+│                                                       │
 │  What: C++ template library for GEMM/Conv on NVIDIA GPUs│
-│                                                         │
-│  Hierarchy:                                              │
-│  ┌──────────────────────────────────────────────────┐  │
-│  │ Level 0: Tensor Core MMA (hardware instruction)   │  │
-│  │ Level 1: Warp-level tile (groups of MMA)          │  │
-│  │ Level 2: Threadblock tile (shared memory)         │  │
-│  │ Level 3: Device-level (grid launch)               │  │
-│  └──────────────────────────────────────────────────┘  │
-│                                                         │
-│  Quantization support:                                  │
-│  ✅ INT8 × INT8 → INT32 GEMM                          │
-│  ✅ FP8 (E4M3/E5M2) GEMM (Hopper+)                   │
+│                                                       │
+│  Hierarchy:                                           │
+│  ┌──────────────────────────────────────────────────┐ │
+│  │ Level 0: Tensor Core MMA (hardware instruction)   ││
+│  │ Level 1: Warp-level tile (groups of MMA)          ││
+│  │ Level 2: Threadblock tile (shared memory)         ││
+│  │ Level 3: Device-level (grid launch)               ││
+│  └──────────────────────────────────────────────────┘ │
+│                                                       │
+│  Quantization support:                                │
+│  ✅ INT8 × INT8 → INT32 GEMM                           │
+│  ✅ FP8 (E4M3/E5M2) GEMM (Hopper+)                     │
 │  ✅ INT4 × FP16 mixed-precision                        │
-│  ✅ FP4 (Blackwell) — CUTLASS 3.7+                    │
+│  ✅ FP4 (Blackwell) — CUTLASS 3.7+                     │
 │  ✅ Grouped GEMM (for MoE)                             │
 │  ✅ Sparse GEMM (structured sparsity)                  │
-│                                                         │
-│  Why it matters to you:                                 │
+│                                                       │
+│  Why it matters to you:                               │
 │  AWQ/GPTQ kernels in vLLM use CUTLASS or Marlin       │
-│  (Marlin = INT4 GEMM kernel derived from CUTLASS)      │
+│  (Marlin = INT4 GEMM kernel derived from CUTLASS)     │
 └─────────────────────────────────────────────────────────┘
 
 ┌──────── Composable Kernel (AMD) ──────────────────────┐
-│                                                         │
-│  What: AMD's equivalent of CUTLASS for ROCm            │
-│  Used by: MIOpen, AITER (AMD Inference Triton kernels) │
-│  Quantization: INT8 GEMM, FP8 GEMM (MI300X+)         │
+│                                                       │
+│  What: AMD's equivalent of CUTLASS for ROCm           │
+│  Used by: MIOpen, AITER (AMD Inference Triton kernels)│
+│  Quantization: INT8 GEMM, FP8 GEMM (MI300X+)          │
 │  Notable: AITER provides FP8/INT8 optimized kernels   │
-│           specifically for LLM inference on AMD GPUs   │
+│           specifically for LLM inference on AMD GPUs  │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -454,34 +454,34 @@ high-performance kernels. They sit between compiler and hand-tuned code.
 
 ```
 ┌──────── Quantization × Compiler Interaction ──────────┐
-│                                                         │
-│  APPROACH 1: Pre-quantized weights + custom kernels    │
+│                                                       │
+│  APPROACH 1: Pre-quantized weights + custom kernels   │
 │  (AWQ, GPTQ approach — what you do)                   │
-│                                                         │
-│  1. Quantize weights offline (Python, calibration)     │
-│  2. Store quantized weights (SafeTensors/GGUF)         │
-│  3. At runtime, call hand-written or Triton kernel     │
-│     that does dequant+matmul fused                     │
-│  4. Compiler DOESN'T do the quantization               │
-│     Compiler just compiles the fused kernel            │
-│                                                         │
-│  APPROACH 2: Compiler-driven quantization              │
-│  (TensorRT, TVM, OpenVINO approach)                    │
-│                                                         │
-│  1. Give FP16/FP32 model to compiler                   │
-│  2. Provide calibration data                           │
-│  3. Compiler inserts quantization nodes (QDQ)          │
-│  4. Compiler fuses quant + compute + dequant           │
-│  5. Compiler generates optimized kernel                │
-│  → Less control, but automatic optimization            │
-│                                                         │
-│  APPROACH 3: Hybrid (emerging — torch.compile + quant) │
-│                                                         │
-│  1. Quantize weights with your algorithm (Python)      │
-│  2. Express quantized ops as torch.ao ops              │
-│  3. torch.compile + Inductor fuses and optimizes       │
-│  → Best of both: your algorithm + compiler fusion      │
-│  → This is where the ecosystem is heading!             │
+│                                                       │
+│  1. Quantize weights offline (Python, calibration)    │
+│  2. Store quantized weights (SafeTensors/GGUF)        │
+│  3. At runtime, call hand-written or Triton kernel    │
+│     that does dequant+matmul fused                    │
+│  4. Compiler DOESN'T do the quantization              │
+│     Compiler just compiles the fused kernel           │
+│                                                       │
+│  APPROACH 2: Compiler-driven quantization             │
+│  (TensorRT, TVM, OpenVINO approach)                   │
+│                                                       │
+│  1. Give FP16/FP32 model to compiler                  │
+│  2. Provide calibration data                          │
+│  3. Compiler inserts quantization nodes (QDQ)         │
+│  4. Compiler fuses quant + compute + dequant          │
+│  5. Compiler generates optimized kernel               │
+│  → Less control, but automatic optimization           │
+│                                                       │
+│  APPROACH 3: Hybrid (emerging — torch.compile + quant)│
+│                                                       │
+│  1. Quantize weights with your algorithm (Python)     │
+│  2. Express quantized ops as torch.ao ops             │
+│  3. torch.compile + Inductor fuses and optimizes      │
+│  → Best of both: your algorithm + compiler fusion     │
+│  → This is where the ecosystem is heading!            │
 └─────────────────────────────────────────────────────────┘
 ```
 

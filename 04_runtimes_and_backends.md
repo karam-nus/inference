@@ -10,22 +10,22 @@
 
 ```
 ┌─────────────────── Terminology Clarification ──────────────────┐
-│                                                                 │
-│  RUNTIME = Software that loads a model graph and executes it    │
-│            Examples: ONNX Runtime, libtorch, ggml, ExecuTorch   │
-│                                                                 │
-│  BACKEND = Hardware-specific code the runtime dispatches to     │
+│                                                                │
+│  RUNTIME = Software that loads a model graph and executes it   │
+│            Examples: ONNX Runtime, libtorch, ggml, ExecuTorch  │
+│                                                                │
+│  BACKEND = Hardware-specific code the runtime dispatches to    │
 │            Examples: CUDA, ROCm/HIP, Metal, Vulkan, SYCL       │
-│                                                                 │
+│                                                                │
 │  EXECUTION PROVIDER (EP) = ONNX Runtime's term for "backend"   │
 │            Examples: CUDAExecutionProvider, CPUExecutionProvider │
-│                                                                 │
-│  DRIVER = Low-level OS-to-hardware interface                    │
-│            Examples: nvidia-driver, amdgpu, intel-gpu-tools     │
-│                                                                 │
-│  KERNEL LIBRARY = Pre-optimized math functions for hardware     │
-│            Examples: cuBLAS, CUTLASS, MIOpen, oneDNN            │
-│                                                                 │
+│                                                                │
+│  DRIVER = Low-level OS-to-hardware interface                   │
+│            Examples: nvidia-driver, amdgpu, intel-gpu-tools    │
+│                                                                │
+│  KERNEL LIBRARY = Pre-optimized math functions for hardware    │
+│            Examples: cuBLAS, CUTLASS, MIOpen, oneDNN           │
+│                                                                │
 └─────────────────────────────────────────────────────────────────┘
 
    Your model → Runtime → Backend → Driver → Hardware
@@ -49,38 +49,38 @@
 
 ```
 ┌──────────────────── ONNX Runtime Architecture ─────────────────┐
-│                                                                  │
-│  ONNX Model (.onnx)                                             │
-│       │                                                          │
-│       ▼                                                          │
-│  Graph Optimization Passes                                       │
-│  ├── Constant folding                                            │
-│  ├── Operator fusion (Conv+BN, MatMul+Add, etc.)                │
-│  ├── Shape inference                                             │
-│  └── Quantization-aware optimizations                            │
-│       │                                                          │
-│       ▼                                                          │
-│  Graph Partitioning                                              │
-│  "Which EP handles which subgraph?"                              │
-│       │                                                          │
-│       ├──►┌──────────────────────┐                              │
-│       │   │ CUDAExecutionProvider│ → NVIDIA GPU subgraphs       │
-│       │   └──────────────────────┘                              │
-│       │                                                          │
-│       ├──►┌──────────────────────┐                              │
-│       │   │ TensorrtEP           │ → Optimized TensorRT engine  │
-│       │   └──────────────────────┘                              │
-│       │                                                          │
-│       ├──►┌──────────────────────┐                              │
-│       │   │ OpenVINOEP           │ → Intel optimized            │
-│       │   └──────────────────────┘                              │
-│       │                                                          │
-│       └──►┌──────────────────────┐                              │
-│           │ CPUExecutionProvider │ → Fallback for remaining ops │
-│           └──────────────────────┘                              │
-│                                                                  │
-│  Key Insight: Different parts of your model can run on          │
-│  different hardware simultaneously!                              │
+│                                                                │
+│  ONNX Model (.onnx)                                            │
+│       │                                                        │
+│       ▼                                                        │
+│  Graph Optimization Passes                                     │
+│  ├── Constant folding                                          │
+│  ├── Operator fusion (Conv+BN, MatMul+Add, etc.)               │
+│  ├── Shape inference                                           │
+│  └── Quantization-aware optimizations                          │
+│       │                                                        │
+│       ▼                                                        │
+│  Graph Partitioning                                            │
+│  "Which EP handles which subgraph?"                            │
+│       │                                                        │
+│       ├──►┌──────────────────────┐                             │
+│       │   │ CUDAExecutionProvider│ → NVIDIA GPU subgraphs      │
+│       │   └──────────────────────┘                             │
+│       │                                                        │
+│       ├──►┌──────────────────────┐                             │
+│       │   │ TensorrtEP           │ → Optimized TensorRT engine │
+│       │   └──────────────────────┘                             │
+│       │                                                        │
+│       ├──►┌──────────────────────┐                             │
+│       │   │ OpenVINOEP           │ → Intel optimized           │
+│       │   └──────────────────────┘                             │
+│       │                                                        │
+│       └──►┌──────────────────────┐                             │
+│           │ CPUExecutionProvider │ → Fallback for remaining ops│
+│           └──────────────────────┘                             │
+│                                                                │
+│  Key Insight: Different parts of your model can run on         │
+│  different hardware simultaneously!                            │
 └──────────────────────────────────────────────────────────────────┘
 ```
 
@@ -111,38 +111,38 @@
 
 ```
 ┌────────────────────────── ggml Architecture ───────────────────┐
-│                                                                 │
-│  Design Philosophy: "Pure C, no dependencies, runs everywhere"  │
-│                                                                 │
-│  Core Abstractions:                                             │
-│  ├── ggml_tensor: N-dimensional array with type info            │
-│  ├── ggml_context: Memory pool for tensors                      │
-│  ├── ggml_cgraph: Computation graph                             │
-│  └── ggml_backend: Hardware dispatch                            │
-│                                                                 │
-│  Quantization Types (unique to ggml):                           │
+│                                                                │
+│  Design Philosophy: "Pure C, no dependencies, runs everywhere" │
+│                                                                │
+│  Core Abstractions:                                            │
+│  ├── ggml_tensor: N-dimensional array with type info           │
+│  ├── ggml_context: Memory pool for tensors                     │
+│  ├── ggml_cgraph: Computation graph                            │
+│  └── ggml_backend: Hardware dispatch                           │
+│                                                                │
+│  Quantization Types (unique to ggml):                          │
 │  ├── Q4_0: 4-bit uniform quantization (32 weights per block)   │
 │  ├── Q4_1: 4-bit with min value offset                         │
-│  ├── Q4_K_M: 4-bit with K-quant super-blocks (recommended)    │
-│  ├── Q5_K_M: 5-bit K-quant (quality-optimized)                │
+│  ├── Q4_K_M: 4-bit with K-quant super-blocks (recommended)     │
+│  ├── Q5_K_M: 5-bit K-quant (quality-optimized)                 │
 │  ├── Q6_K: 6-bit K-quant                                       │
 │  ├── Q8_0: 8-bit symmetric                                     │
-│  ├── IQ1_S: 1.5-bit importance quantization                   │
-│  ├── IQ2_XS: 2.3-bit importance quantization                  │
-│  ├── IQ3_S: 3.4-bit importance quantization                   │
-│  └── IQ4_XS: 4.25-bit importance quantization                 │
-│                                                                 │
-│  Backend Dispatch (17+ backends):                               │
-│  ├── CPU: x86 (AVX/AVX2/AVX512/AMX), ARM (NEON/SVE), RISC-V  │
-│  ├── CUDA: custom kernels for NVIDIA GPUs                       │
-│  ├── Metal: Apple GPU compute shaders                           │
-│  ├── Vulkan: cross-platform GPU compute                         │
-│  ├── SYCL: Intel GPUs                                           │
-│  ├── HIP: AMD GPUs                                              │
+│  ├── IQ1_S: 1.5-bit importance quantization                    │
+│  ├── IQ2_XS: 2.3-bit importance quantization                   │
+│  ├── IQ3_S: 3.4-bit importance quantization                    │
+│  └── IQ4_XS: 4.25-bit importance quantization                  │
+│                                                                │
+│  Backend Dispatch (17+ backends):                              │
+│  ├── CPU: x86 (AVX/AVX2/AVX512/AMX), ARM (NEON/SVE), RISC-V    │
+│  ├── CUDA: custom kernels for NVIDIA GPUs                      │
+│  ├── Metal: Apple GPU compute shaders                          │
+│  ├── Vulkan: cross-platform GPU compute                        │
+│  ├── SYCL: Intel GPUs                                          │
+│  ├── HIP: AMD GPUs                                             │
 │  ├── CANN: Huawei Ascend NPUs                                  │
 │  ├── OpenCL: Qualcomm Adreno GPUs                              │
 │  └── ZenDNN: AMD CPU optimization                              │
-│                                                                 │
+│                                                                │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -152,67 +152,67 @@
 
 ```
 ┌────────────────────── NVIDIA CUDA Stack ───────────────────────┐
-│                                                                 │
+│                                                                │
 │  Application (vLLM, TRT-LLM, etc.)                             │
-│       │                                                         │
-│       ▼                                                         │
-│  CUDA Runtime API (cudart)                                      │
-│       │                                                         │
+│       │                                                        │
+│       ▼                                                        │
+│  CUDA Runtime API (cudart)                                     │
+│       │                                                        │
 │       ├──► cuBLAS (dense linear algebra: GEMM, etc.)           │
-│       ├──► CUTLASS (template library for custom GEMMs)          │
-│       ├──► cuDNN (convolutions, normalization, activation)      │
-│       ├──► NCCL (multi-GPU communication)                       │
-│       ├──► FlashAttention (memory-efficient attention)          │
+│       ├──► CUTLASS (template library for custom GEMMs)         │
+│       ├──► cuDNN (convolutions, normalization, activation)     │
+│       ├──► NCCL (multi-GPU communication)                      │
+│       ├──► FlashAttention (memory-efficient attention)         │
 │       ├──► FlashInfer (PagedAttention kernels)                 │
 │       └──► Custom Triton kernels (written in Triton language)  │
-│       │                                                         │
-│       ▼                                                         │
-│  CUDA Driver API                                                │
-│       │                                                         │
-│       ▼                                                         │
-│  NVIDIA GPU Driver                                              │
-│       │                                                         │
-│       ▼                                                         │
+│       │                                                        │
+│       ▼                                                        │
+│  CUDA Driver API                                               │
+│       │                                                        │
+│       ▼                                                        │
+│  NVIDIA GPU Driver                                             │
+│       │                                                        │
+│       ▼                                                        │
 │  NVIDIA GPU Hardware (Tensor Cores, CUDA Cores, HBM)           │
 └─────────────────────────────────────────────────────────────────┘
 
 ┌────────────────────── AMD ROCm Stack ──────────────────────────┐
-│                                                                 │
-│  Application (vLLM, SGLang, llama.cpp)                          │
-│       │                                                         │
-│       ▼                                                         │
-│  HIP Runtime (source-compatible with CUDA)                      │
-│       │                                                         │
+│                                                                │
+│  Application (vLLM, SGLang, llama.cpp)                         │
+│       │                                                        │
+│       ▼                                                        │
+│  HIP Runtime (source-compatible with CUDA)                     │
+│       │                                                        │
 │       ├──► hipBLAS / rocBLAS (linear algebra)                  │
-│       ├──► MIOpen (deep learning primitives)                    │
-│       ├──► RCCL (multi-GPU communication)                       │
+│       ├──► MIOpen (deep learning primitives)                   │
+│       ├──► RCCL (multi-GPU communication)                      │
 │       ├──► Composable Kernel (AMD's CUTLASS equivalent)        │
 │       ├──► AITER (AMD Inference Tiled Engine Routines)         │
 │       └──► FlashAttention (ROCm port)                          │
-│       │                                                         │
-│       ▼                                                         │
-│  ROCm Runtime + AMD GPU Driver                                  │
-│       │                                                         │
-│       ▼                                                         │
-│  AMD GPU Hardware (Matrix Cores, Compute Units, HBM)            │
+│       │                                                        │
+│       ▼                                                        │
+│  ROCm Runtime + AMD GPU Driver                                 │
+│       │                                                        │
+│       ▼                                                        │
+│  AMD GPU Hardware (Matrix Cores, Compute Units, HBM)           │
 └─────────────────────────────────────────────────────────────────┘
 
 ┌────────────────────── Intel oneAPI Stack ──────────────────────┐
-│                                                                 │
-│  Application                                                    │
-│       │                                                         │
-│       ▼                                                         │
-│  SYCL Runtime (or OpenVINO Runtime)                             │
-│       │                                                         │
+│                                                                │
+│  Application                                                   │
+│       │                                                        │
+│       ▼                                                        │
+│  SYCL Runtime (or OpenVINO Runtime)                            │
+│       │                                                        │
 │       ├──► oneDNN / oneMKL (math libraries)                    │
 │       ├──► AMX instructions (CPU matrix acceleration)          │
 │       ├──► VNNI instructions (vector neural network)           │
 │       └──► XMX (Xe Matrix Extensions, for Intel GPUs)          │
-│       │                                                         │
-│       ▼                                                         │
-│  Intel GPU Driver / CPU                                         │
-│       │                                                         │
-│       ▼                                                         │
+│       │                                                        │
+│       ▼                                                        │
+│  Intel GPU Driver / CPU                                        │
+│       │                                                        │
+│       ▼                                                        │
 │  Intel Xeon CPU (AMX, AVX-512) or Intel Arc/Gaudi GPU          │
 └─────────────────────────────────────────────────────────────────┘
 ```
