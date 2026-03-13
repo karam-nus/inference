@@ -1,0 +1,62 @@
+title: "Inference & Deployment Guide"
+description: "From Quantized Model to Production: The Complete Inference & Deployment Guide for AI Researchers"
+baseurl: "/inference"
+url: "https://karam-nus.github.io"
+
+markdown: kramdown
+highlighter: rouge
+
+kramdown:
+  input: GFM
+  hard_wrap: false
+  syntax_highlighter: rouge
+  syntax_highlighter_opts:
+    css_class: "highlight"
+    span:
+      line_numbers: false
+    block:
+      line_numbers: false
+
+plugins:
+  - jekyll-relative-links
+
+relative_links:
+  enabled: true
+  collections: false
+
+include:
+  - README.md
+
+navigation:
+  - title: "Home"
+    url: "/"
+  - title: "01 — Grand Overview"
+    url: "/01_grand_overview"
+  - title: "02 — Glossary & Concept Map"
+    url: "/02_glossary_and_concept_map"
+  - title: "03 — Inference Engines"
+    url: "/03_inference_engines"
+  - title: "04 — Runtimes & Backends"
+    url: "/04_runtimes_and_backends"
+  - title: "05 — Hardware Landscape"
+    url: "/05_hardware_landscape"
+  - title: "06 — Quantization to Deployment"
+    url: "/06_quantization_to_deployment"
+  - title: "07 — Company Landscape"
+    url: "/07_company_landscape"
+  - title: "08 — Model Formats"
+    url: "/08_model_formats"
+  - title: "09 — Serving & Middleware"
+    url: "/09_serving_and_middleware"
+  - title: "10 — Edge & Embedded"
+    url: "/10_edge_and_embedded"
+  - title: "11 — Compiler Stack"
+    url: "/11_compiler_stack"
+  - title: "12 — Practical Code Guide"
+    url: "/12_practical_code_guide"
+
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: "default"
